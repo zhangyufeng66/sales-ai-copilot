@@ -61,9 +61,6 @@ public class MainActivity extends Activity {
         setupSpeechRecognizer();
     }
 
-    // =========================
-    // 状态栏
-    // =========================
     private void setupStatusBar() {
 
         Window window = getWindow();
@@ -79,9 +76,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    // =========================
-    // 创建界面
-    // =========================
     private void buildInterface() {
 
         root = new LinearLayout(this);
@@ -100,7 +94,6 @@ public class MainActivity extends Activity {
                 baseBottom
         );
 
-        // 自动避开 Mate XT 状态栏
         root.setOnApplyWindowInsetsListener((v, insets) -> {
 
             int statusBarHeight = 0;
@@ -129,16 +122,16 @@ public class MainActivity extends Activity {
             return insets;
         });
 
-        // =========================
-        // 标题
-        // =========================
         TextView title = new TextView(this);
 
         title.setText("销售AI副驾驶");
         title.setTextColor(dark);
         title.setTextSize(28);
         title.setGravity(Gravity.CENTER);
-        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setTypeface(
+                null,
+                android.graphics.Typeface.BOLD
+        );
 
         LinearLayout.LayoutParams titleParams =
                 new LinearLayout.LayoutParams(
@@ -150,9 +143,6 @@ public class MainActivity extends Activity {
 
         root.addView(title, titleParams);
 
-        // =========================
-        // 副标题
-        // =========================
         TextView subtitle = new TextView(this);
 
         subtitle.setText(
@@ -176,9 +166,6 @@ public class MainActivity extends Activity {
 
         root.addView(subtitle, subtitleParams);
 
-        // =========================
-        // 客户消息标题
-        // =========================
         TextView inputTitle = new TextView(this);
 
         inputTitle.setText("客户消息 / 客户情况");
@@ -202,9 +189,6 @@ public class MainActivity extends Activity {
                 inputTitleParams
         );
 
-        // =========================
-        // 输入框
-        // =========================
         input = new EditText(this);
 
         input.setHint(
@@ -213,6 +197,7 @@ public class MainActivity extends Activity {
 
         input.setTextSize(16);
         input.setTextColor(dark);
+
         input.setHintTextColor(
                 Color.rgb(150, 155, 165)
         );
@@ -246,15 +231,14 @@ public class MainActivity extends Activity {
 
         inputParams.bottomMargin = 12;
 
-        root.addView(input, inputParams);
+        root.addView(
+                input,
+                inputParams
+        );
 
-        // =========================
-        // 语音按钮
-        // =========================
         voiceButton = new Button(this);
 
         voiceButton.setText("🎙️ 语音输入");
-
         voiceButton.setTextColor(blue);
         voiceButton.setTextSize(17);
         voiceButton.setGravity(Gravity.CENTER);
@@ -285,13 +269,9 @@ public class MainActivity extends Activity {
                 v -> toggleSpeech()
         );
 
-        // =========================
-        // AI分析按钮
-        // =========================
         analyzeButton = new Button(this);
 
         analyzeButton.setText("🤖 AI销售分析");
-
         analyzeButton.setTextColor(Color.WHITE);
         analyzeButton.setTextSize(18);
         analyzeButton.setGravity(Gravity.CENTER);
@@ -329,9 +309,6 @@ public class MainActivity extends Activity {
                 v -> analyzeCustomer()
         );
 
-        // =========================
-        // 分析结果标题
-        // =========================
         TextView resultTitle = new TextView(this);
 
         resultTitle.setText("AI销售分析");
@@ -355,9 +332,6 @@ public class MainActivity extends Activity {
                 resultTitleParams
         );
 
-        // =========================
-        // 分析结果
-        // =========================
         result = new TextView(this);
 
         result.setText(
@@ -379,7 +353,10 @@ public class MainActivity extends Activity {
                 Gravity.TOP | Gravity.START
         );
 
-        result.setLineSpacing(6, 1.0f);
+        result.setLineSpacing(
+                6,
+                1.0f
+        );
 
         result.setPadding(
                 20,
@@ -409,9 +386,6 @@ public class MainActivity extends Activity {
                 resultParams
         );
 
-        // =========================
-        // 使用提示
-        // =========================
         TextView tips = new TextView(this);
 
         tips.setText(
@@ -427,7 +401,11 @@ public class MainActivity extends Activity {
         );
 
         tips.setTextSize(14);
-        tips.setLineSpacing(5, 1.0f);
+
+        tips.setLineSpacing(
+                5,
+                1.0f
+        );
 
         tips.setPadding(
                 20,
@@ -446,9 +424,6 @@ public class MainActivity extends Activity {
 
         root.addView(tips);
 
-        // =========================
-        // ScrollView
-        // =========================
         scrollView = new ScrollView(this);
 
         scrollView.setFillViewport(true);
@@ -458,9 +433,6 @@ public class MainActivity extends Activity {
         setContentView(scrollView);
     }
 
-    // =========================
-    // 初始化语音识别
-    // =========================
     private void setupSpeechRecognizer() {
 
         if (!SpeechRecognizer.isRecognitionAvailable(this)) {
@@ -504,12 +476,11 @@ public class MainActivity extends Activity {
                     public void onReadyForSpeech(
                             Bundle params) {
 
-                        runOnUiThread(() -> {
-
-                            voiceButton.setText(
-                                    "🔴 正在听，请说话..."
-                            );
-                        });
+                        runOnUiThread(() ->
+                                voiceButton.setText(
+                                        "🔴 正在听，请说话..."
+                                )
+                        );
                     }
 
                     @Override
@@ -529,12 +500,11 @@ public class MainActivity extends Activity {
                     @Override
                     public void onEndOfSpeech() {
 
-                        runOnUiThread(() -> {
-
-                            voiceButton.setText(
-                                    "🎙️ 正在处理语音..."
-                            );
-                        });
+                        runOnUiThread(() ->
+                                voiceButton.setText(
+                                        "🎙️ 正在处理语音..."
+                                )
+                        );
                     }
 
                     @Override
@@ -549,14 +519,11 @@ public class MainActivity extends Activity {
                                     "🎙️ 语音输入"
                             );
 
-                            String message =
-                                    getSpeechErrorMessage(
-                                            error
-                                    );
-
                             Toast.makeText(
                                     MainActivity.this,
-                                    message,
+                                    getSpeechErrorMessage(
+                                            error
+                                    ),
                                     Toast.LENGTH_SHORT
                             ).show();
                         });
@@ -599,11 +566,9 @@ public class MainActivity extends Activity {
                             Bundle partialResults) {
 
                         ArrayList<String> matches =
-                                partialResults
-                                        .getStringArrayList(
-                                                SpeechRecognizer
-                                                        .RESULTS_RECOGNITION
-                                        );
+                                partialResults.getStringArrayList(
+                                        SpeechRecognizer.RESULTS_RECOGNITION
+                                );
 
                         if (matches != null &&
                                 !matches.isEmpty()) {
@@ -631,9 +596,6 @@ public class MainActivity extends Activity {
         );
     }
 
-    // =========================
-    // 开始/停止语音
-    // =========================
     private void toggleSpeech() {
 
         if (isListening) {
@@ -670,9 +632,6 @@ public class MainActivity extends Activity {
         startSpeechRecognition();
     }
 
-    // =========================
-    // 开始语音识别
-    // =========================
     private void startSpeechRecognition() {
 
         if (speechRecognizer == null) {
@@ -697,9 +656,6 @@ public class MainActivity extends Activity {
         );
     }
 
-    // =========================
-    // 权限结果
-    // =========================
     @Override
     public void onRequestPermissionsResult(
             int requestCode,
@@ -731,9 +687,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    // =========================
-    // 语音错误提示
-    // =========================
     private String getSpeechErrorMessage(
             int error) {
 
@@ -746,4 +699,70 @@ public class MainActivity extends Activity {
                 return "语音识别客户端错误";
 
             case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-      
+                return "没有麦克风权限";
+
+            case SpeechRecognizer.ERROR_NETWORK:
+                return "语音识别网络错误";
+
+            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                return "语音识别网络超时";
+
+            case SpeechRecognizer.ERROR_NO_MATCH:
+                return "没有听清，请再说一次";
+
+            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                return "语音识别正在使用";
+
+            case SpeechRecognizer.ERROR_SERVER:
+                return "语音识别服务器错误";
+
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                return "没有检测到说话";
+
+            default:
+                return "语音识别失败，请重试";
+        }
+    }
+
+    private void analyzeCustomer() {
+
+        String message =
+                input.getText()
+                        .toString()
+                        .trim();
+
+        if (message.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "请输入客户消息",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        analyzeButton.setEnabled(false);
+
+        analyzeButton.setText(
+                "正在分析..."
+        );
+
+        result.setText(
+                "AI正在分析客户信息，请稍候..."
+        );
+
+        new Thread(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+
+                URL url =
+                        new URL(API_URL);
+
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                conne
