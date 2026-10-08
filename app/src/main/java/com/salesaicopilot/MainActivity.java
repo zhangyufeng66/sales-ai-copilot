@@ -7,8 +7,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -46,12 +44,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setupStatusBar();
-
         buildInterface();
     }
 
     // =========================================================
-    // 状态栏适配
+    // 状态栏
     // =========================================================
 
     private void setupStatusBar() {
@@ -78,10 +75,7 @@ public class MainActivity extends Activity {
         scrollView = new ScrollView(this);
 
         scrollView.setFillViewport(true);
-
-        scrollView.setBackgroundColor(
-                background
-        );
+        scrollView.setBackgroundColor(background);
 
         root = new LinearLayout(this);
 
@@ -89,10 +83,10 @@ public class MainActivity extends Activity {
                 LinearLayout.VERTICAL
         );
 
-        // 顶部增加安全距离
+        // 顶部距离调整为25dp
         root.setPadding(
                 28,
-                65,
+                25,
                 28,
                 35
         );
@@ -111,13 +105,9 @@ public class MainActivity extends Activity {
                 "销售AI副驾驶"
         );
 
-        title.setTextSize(
-                28
-        );
+        title.setTextSize(28);
 
-        title.setTextColor(
-                dark
-        );
+        title.setTextColor(dark);
 
         title.setGravity(
                 Gravity.CENTER
@@ -146,9 +136,7 @@ public class MainActivity extends Activity {
                 "DeepSeek AI · 客户分析 · 销售策略 · 智能话术"
         );
 
-        subtitle.setTextSize(
-                14
-        );
+        subtitle.setTextSize(14);
 
         subtitle.setTextColor(
                 Color.GRAY
@@ -176,9 +164,7 @@ public class MainActivity extends Activity {
                 "客户消息 / 客户情况"
         );
 
-        customerTitle.setTextSize(
-                18
-        );
+        customerTitle.setTextSize(18);
 
         customerTitle.setTextColor(
                 dark
@@ -217,9 +203,7 @@ public class MainActivity extends Activity {
                 "例如：客户说你们价格有点高，我再考虑一下..."
         );
 
-        input.setTextSize(
-                17
-        );
+        input.setTextSize(17);
 
         input.setGravity(
                 Gravity.TOP
@@ -232,9 +216,7 @@ public class MainActivity extends Activity {
                 20
         );
 
-        input.setSingleLine(
-                false
-        );
+        input.setSingleLine(false);
 
         input.setBackground(
                 roundBackground(
@@ -261,9 +243,7 @@ public class MainActivity extends Activity {
                 "🤖 AI销售分析"
         );
 
-        analyzeButton.setTextSize(
-                18
-        );
+        analyzeButton.setTextSize(18);
 
         analyzeButton.setTextColor(
                 Color.WHITE
@@ -314,7 +294,7 @@ public class MainActivity extends Activity {
         );
 
         // =====================================================
-        // 分析结果标题
+        // AI分析结果标题
         // =====================================================
 
         TextView resultTitle = new TextView(this);
@@ -323,9 +303,7 @@ public class MainActivity extends Activity {
                 "AI销售分析"
         );
 
-        resultTitle.setTextSize(
-                19
-        );
+        resultTitle.setTextSize(19);
 
         resultTitle.setTextColor(
                 dark
@@ -345,7 +323,7 @@ public class MainActivity extends Activity {
         );
 
         // =====================================================
-        // 分析结果
+        // AI分析结果
         // =====================================================
 
         result = new TextView(this);
@@ -362,9 +340,7 @@ public class MainActivity extends Activity {
                 "• 推荐销售话术"
         );
 
-        result.setTextSize(
-                16
-        );
+        result.setTextSize(16);
 
         result.setTextColor(
                 Color.DKGRAY
@@ -411,9 +387,7 @@ public class MainActivity extends Activity {
                 "⑤ 自动生成推荐话术"
         );
 
-        tip.setTextSize(
-                14
-        );
+        tip.setTextSize(14);
 
         tip.setTextColor(
                 Color.GRAY
@@ -437,16 +411,12 @@ public class MainActivity extends Activity {
                 tipParams
         );
 
-        scrollView.addView(
-                root
-        );
+        scrollView.addView(root);
 
-        setContentView(
-                scrollView
-        );
+        setContentView(scrollView);
 
         // =====================================================
-        // 按钮点击
+        // AI按钮点击
         // =====================================================
 
         analyzeButton.setOnClickListener(
@@ -471,9 +441,7 @@ public class MainActivity extends Activity {
                             return;
                         }
 
-                        analyzeCustomer(
-                                message
-                        );
+                        analyzeCustomer(message);
                     }
                 }
         );
@@ -486,9 +454,7 @@ public class MainActivity extends Activity {
     private void analyzeCustomer(
             String message) {
 
-        analyzeButton.setEnabled(
-                false
-        );
+        analyzeButton.setEnabled(false);
 
         analyzeButton.setText(
                 "AI正在分析..."
@@ -507,9 +473,7 @@ public class MainActivity extends Activity {
                         try {
 
                             URL url =
-                                    new URL(
-                                            API_URL
-                                    );
+                                    new URL(API_URL);
 
                             HttpURLConnection connection =
                                     (HttpURLConnection)
@@ -557,7 +521,6 @@ public class MainActivity extends Activity {
                             );
 
                             output.flush();
-
                             output.close();
 
                             int responseCode =
@@ -598,9 +561,7 @@ public class MainActivity extends Activity {
                                             != null
                             ) {
 
-                                response.append(
-                                        line
-                                );
+                                response.append(line);
                             }
 
                             reader.close();
@@ -613,29 +574,23 @@ public class MainActivity extends Activity {
                             final String aiResult;
 
                             if (
-                                    jsonResponse.has(
-                                            "result"
-                                    )
+                                    jsonResponse.has("result")
                             ) {
 
                                 aiResult =
-                                        jsonResponse
-                                                .getString(
-                                                        "result"
-                                                );
+                                        jsonResponse.getString(
+                                                "result"
+                                        );
 
                             } else if (
-                                    jsonResponse.has(
-                                            "error"
-                                    )
+                                    jsonResponse.has("error")
                             ) {
 
                                 aiResult =
                                         "AI接口错误：\n" +
-                                        jsonResponse
-                                                .getString(
-                                                        "error"
-                                                );
+                                        jsonResponse.getString(
+                                                "error"
+                                        );
 
                             } else {
 
@@ -654,15 +609,13 @@ public class MainActivity extends Activity {
                                                     aiResult
                                             );
 
-                                            analyzeButton
-                                                    .setEnabled(
-                                                            true
-                                                    );
+                                            analyzeButton.setEnabled(
+                                                    true
+                                            );
 
-                                            analyzeButton
-                                                    .setText(
-                                                            "🤖 AI销售分析"
-                                                    );
+                                            analyzeButton.setText(
+                                                    "🤖 AI销售分析"
+                                            );
                                         }
                                     }
                             );
@@ -690,15 +643,13 @@ public class MainActivity extends Activity {
                                                     "请检查网络连接和服务器配置。"
                                             );
 
-                                            analyzeButton
-                                                    .setEnabled(
-                                                            true
-                                                    );
+                                            analyzeButton.setEnabled(
+                                                    true
+                                            );
 
-                                            analyzeButton
-                                                    .setText(
-                                                            "🤖 AI销售分析"
-                                                    );
+                                            analyzeButton.setText(
+                                                    "🤖 AI销售分析"
+                                            );
                                         }
                                     }
                             );
