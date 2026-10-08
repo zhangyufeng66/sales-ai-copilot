@@ -82,4 +82,3 @@ export default async function handler(req, res) {
       error: error.message || "服务器语音识别失败"
     });
   }
-}
