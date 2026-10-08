@@ -121,10 +121,12 @@ public class MainActivity extends Activity {
         });
 
         TextView title = new TextView(this);
+
         title.setText("销售AI副驾驶");
         title.setTextColor(dark);
         title.setTextSize(28);
         title.setGravity(Gravity.CENTER);
+
         title.setTypeface(
                 null,
                 android.graphics.Typeface.BOLD
@@ -138,7 +140,10 @@ public class MainActivity extends Activity {
 
         titleParams.bottomMargin = 8;
 
-        root.addView(title, titleParams);
+        root.addView(
+                title,
+                titleParams
+        );
 
         TextView subtitle = new TextView(this);
 
@@ -161,11 +166,17 @@ public class MainActivity extends Activity {
 
         subtitleParams.bottomMargin = 24;
 
-        root.addView(subtitle, subtitleParams);
+        root.addView(
+                subtitle,
+                subtitleParams
+        );
 
         TextView inputTitle = new TextView(this);
 
-        inputTitle.setText("客户消息 / 客户情况");
+        inputTitle.setText(
+                "客户消息 / 客户情况"
+        );
+
         inputTitle.setTextColor(dark);
         inputTitle.setTextSize(17);
 
@@ -182,7 +193,10 @@ public class MainActivity extends Activity {
 
         inputTitleParams.bottomMargin = 10;
 
-        root.addView(inputTitle, inputTitleParams);
+        root.addView(
+                inputTitle,
+                inputTitleParams
+        );
 
         input = new EditText(this);
 
@@ -226,15 +240,34 @@ public class MainActivity extends Activity {
 
         inputParams.bottomMargin = 12;
 
-        root.addView(input, inputParams);
+        root.addView(
+                input,
+                inputParams
+        );
 
         voiceButton = new Button(this);
 
-        voiceButton.setText("🎙️ 语音输入");
+        voiceButton.setText(
+                "🎙️ 语音输入"
+        );
+
         voiceButton.setTextColor(blue);
-        voiceButton.setTextSize(17);
-        voiceButton.setGravity(Gravity.CENTER);
+
+        // 适配华为 Mate XT
+        voiceButton.setTextSize(16);
+
+        voiceButton.setGravity(
+                Gravity.CENTER
+        );
+
         voiceButton.setAllCaps(false);
+
+        voiceButton.setPadding(
+                10,
+                5,
+                10,
+                5
+        );
 
         voiceButton.setBackground(
                 roundBackground(
@@ -247,12 +280,15 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams voiceParams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        70
+                        90
                 );
 
         voiceParams.bottomMargin = 12;
 
-        root.addView(voiceButton, voiceParams);
+        root.addView(
+                voiceButton,
+                voiceParams
+        );
 
         voiceButton.setOnClickListener(
                 v -> toggleSpeech()
@@ -260,10 +296,20 @@ public class MainActivity extends Activity {
 
         analyzeButton = new Button(this);
 
-        analyzeButton.setText("🤖 AI销售分析");
-        analyzeButton.setTextColor(Color.WHITE);
+        analyzeButton.setText(
+                "🤖 AI销售分析"
+        );
+
+        analyzeButton.setTextColor(
+                Color.WHITE
+        );
+
         analyzeButton.setTextSize(18);
-        analyzeButton.setGravity(Gravity.CENTER);
+
+        analyzeButton.setGravity(
+                Gravity.CENTER
+        );
+
         analyzeButton.setAllCaps(false);
 
         analyzeButton.setPadding(
@@ -300,7 +346,10 @@ public class MainActivity extends Activity {
 
         TextView resultTitle = new TextView(this);
 
-        resultTitle.setText("AI销售分析");
+        resultTitle.setText(
+                "AI销售分析"
+        );
+
         resultTitle.setTextColor(dark);
         resultTitle.setTextSize(19);
 
@@ -416,7 +465,9 @@ public class MainActivity extends Activity {
         root.addView(tips);
 
         scrollView = new ScrollView(this);
+
         scrollView.setFillViewport(true);
+
         scrollView.addView(root);
 
         setContentView(scrollView);
@@ -581,8 +632,7 @@ public class MainActivity extends Activity {
                     }
                 }
         );
-    }
-    private void toggleSpeech() {
+    }    private void toggleSpeech() {
 
         if (isListening) {
 
@@ -788,7 +838,9 @@ public class MainActivity extends Activity {
                         connection.getOutputStream();
 
                 output.write(data);
+
                 output.flush();
+
                 output.close();
 
                 int responseCode =
@@ -904,6 +956,7 @@ public class MainActivity extends Activity {
             } finally {
 
                 if (connection != null) {
+
                     connection.disconnect();
                 }
             }
@@ -919,7 +972,9 @@ public class MainActivity extends Activity {
         GradientDrawable drawable =
                 new GradientDrawable();
 
-        drawable.setColor(fillColor);
+        drawable.setColor(
+                fillColor
+        );
 
         drawable.setCornerRadius(
                 radius
@@ -943,7 +998,6 @@ public class MainActivity extends Activity {
             speechRecognizer = null;
         }
 
-super.onDestroy();
-}
-
+        super.onDestroy();
+    }
 }
