@@ -2,14 +2,11 @@ package com.salesaicopilot;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -30,13 +27,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 
 public class MainActivity extends Activity {
 
-    private final int blue = Color.rgb(22, 119, 255);
-    private final int dark = Color.rgb(30, 30, 30);
-    private final int background = Color.rgb(247, 249, 252);
+    private final int BG = Color.rgb(247, 249, 252);
+    private final int CARD = Color.WHITE;
+    private final int TEXT = Color.rgb(30, 35, 45);
+    private final int SUB = Color.rgb(100, 110, 125);
+    private final int BLUE = Color.rgb(35, 105, 220);
 
     private EditText input;
     private TextView result;
@@ -45,12 +43,17 @@ public class MainActivity extends Activity {
     private ScrollView scrollView;
     private LinearLayout root;
 
-    private SpeechRecognizer speechRecognizer;
-    private Intent speechIntent;
-    private boolean isListening = false;
+    private MediaRecorder mediaRecorder;
+    private boolean isRecording = false;
+    private String audioPath;
+
+    private static final int RECORD_AUDIO_PERMISSION = 1001;
 
     private static final String API_URL =
             "https://sales-ai-copilot-beta.vercel.app/api/analyze";
+
+    private static final String TRANSCRIBE_URL =
+            "https://sales-ai-copilot-beta.vercel.app/api/transcribe";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,18 +61,14 @@ public class MainActivity extends Activity {
 
         setupStatusBar();
         buildInterface();
-        setupSpeechRecognizer();
     }
 
     private void setupStatusBar() {
-
         Window window = getWindow();
 
-        window.setStatusBarColor(background);
+        window.setStatusBarColor(BG);
 
-        if (android.os.Build.VERSION.SDK_INT >=
-                android.os.Build.VERSION_CODES.M) {
-
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
             window.getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             );
@@ -79,336 +78,171 @@ public class MainActivity extends Activity {
     private void buildInterface() {
 
         root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(BG);
 
-        root.setOrientation(
-                LinearLayout.VERTICAL
-        );
+        int statusBarHeight = 0;
 
-        root.setBackgroundColor(
-                background
-        );
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            WindowInsets insets =
+                    getWindow().getDecorView().getRootWindowInsets();
 
-        final int baseLeft = 28;
-        final int baseTop = 12;
-        final int baseRight = 28;
-        final int baseBottom = 35;
+            if (insets != null) {
+                statusBarHeight =
+                        insets.getInsets(WindowInsets.Type.statusBars()).top;
+            }
+        }
 
-        root.setPadding(
-                baseLeft,
-                baseTop,
-                baseRight,
-                baseBottom
-        );
-
-        root.setOnApplyWindowInsetsListener(
-                (v, insets) -> {
-
-                    int statusBarHeight = 0;
-
-                    if (android.os.Build.VERSION.SDK_INT >=
-                            android.os.Build.VERSION_CODES.R) {
-
-                        statusBarHeight =
-                                insets.getInsets(
-                                        WindowInsets.Type.statusBars()
-                                ).top;
-
-                    } else {
-
-                        statusBarHeight =
-                                insets.getSystemWindowInsetTop();
-                    }
-
-                    v.setPadding(
-                            baseLeft,
-                            baseTop + statusBarHeight,
-                            baseRight,
-                            baseBottom
+        if (statusBarHeight <= 0) {
+            int resourceId = getResources()
+                    .getIdentifier(
+                            "status_bar_height",
+                            "dimen",
+                            "android"
                     );
 
-                    return insets;
-                }
+            if (resourceId > 0) {
+                statusBarHeight =
+                        getResources().getDimensionPixelSize(resourceId);
+            }
+        }
+
+        root.setPadding(
+                28,
+                statusBarHeight + 12,
+                28,
+                35
         );
 
         TextView title = new TextView(this);
-
-        title.setText(
-                "销售AI副驾驶"
-        );
-
-        title.setTextColor(
-                dark
-        );
-
-        title.setTextSize(
-                28
-        );
-
-        title.setGravity(
-                Gravity.CENTER
-        );
-
-        title.setTypeface(
-                null,
-                android.graphics.Typeface.BOLD
-        );
-
-        LinearLayout.LayoutParams titleParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-
-        titleParams.bottomMargin = 8;
+        title.setText("销售AI副驾驶");
+        title.setTextColor(TEXT);
+        title.setTextSize(28);
+        title.setGravity(Gravity.CENTER);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
 
         root.addView(
                 title,
-                titleParams
-        );
-
-        TextView subtitle = new TextView(this);
-
-        subtitle.setText(
-                "DeepSeek AI · 客户分析 · 销售策略 · 智能话术"
-        );
-
-        subtitle.setTextColor(
-                Color.rgb(100, 110, 125)
-        );
-
-        subtitle.setTextSize(
-                14
-        );
-
-        subtitle.setGravity(
-                Gravity.CENTER
-        );
-
-        LinearLayout.LayoutParams subtitleParams =
                 new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-
-        subtitleParams.bottomMargin = 24;
-
-        root.addView(
-                subtitle,
-                subtitleParams
-        );
-
-        TextView inputTitle = new TextView(this);
-
-        inputTitle.setText(
-                "客户消息 / 客户情况"
-        );
-
-        inputTitle.setTextColor(
-                dark
-        );
-
-        inputTitle.setTextSize(
-                17
-        );
-
-        inputTitle.setTypeface(
-                null,
-                android.graphics.Typeface.BOLD
-        );
-
-        LinearLayout.LayoutParams inputTitleParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-
-        inputTitleParams.bottomMargin = 10;
-
-        root.addView(
-                inputTitle,
-                inputTitleParams
-        );
-
-        input = new EditText(this);
-
-        input.setHint(
-                "例如：客户说你们价格有点高，我再考虑一下..."
-        );
-
-        input.setTextSize(
-                16
-        );
-
-        input.setTextColor(
-                dark
-        );
-
-        input.setHintTextColor(
-                Color.rgb(150, 155, 165)
-        );
-
-        input.setGravity(
-                Gravity.TOP | Gravity.START
-        );
-
-        input.setPadding(
-                20,
-                18,
-                20,
-                18
-        );
-
-        input.setMinHeight(
-                150
-        );
-
-        input.setBackground(
-                roundBackground(
-                        Color.WHITE,
-                        Color.rgb(225, 230, 238),
-                        18
+                        -1,
+                        55
                 )
         );
 
+        TextView subtitle = new TextView(this);
+        subtitle.setText(
+                "DeepSeek AI · 客户分析 · 销售策略 · 智能话术"
+        );
+        subtitle.setTextColor(SUB);
+        subtitle.setTextSize(14);
+        subtitle.setGravity(Gravity.CENTER);
+
+        LinearLayout.LayoutParams subtitleParams =
+                new LinearLayout.LayoutParams(
+                        -1,
+                        35
+                );
+
+        subtitleParams.bottomMargin = 10;
+
+        root.addView(subtitle, subtitleParams);
+
+        TextView inputTitle = new TextView(this);
+        inputTitle.setText("客户消息 / 客户情况");
+        inputTitle.setTextColor(TEXT);
+        inputTitle.setTextSize(17);
+        inputTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+
+        root.addView(
+                inputTitle,
+                new LinearLayout.LayoutParams(
+                        -1,
+                        40
+                )
+        );
+
+        input = new EditText(this);
+        input.setHint(
+                "例如：客户说你们价格有点高，我再考虑一下..."
+        );
+        input.setTextSize(16);
+        input.setTextColor(TEXT);
+        input.setHintTextColor(Color.rgb(160, 168, 180));
+        input.setGravity(Gravity.TOP | Gravity.LEFT);
+        input.setPadding(20, 18, 20, 18);
+        input.setSingleLine(false);
+        input.setMinLines(5);
+
+        GradientDrawable inputBg =
+                new GradientDrawable();
+
+        inputBg.setColor(CARD);
+        inputBg.setCornerRadius(20);
+
+        input.setBackground(inputBg);
+
         LinearLayout.LayoutParams inputParams =
                 new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        170
+                        -1,
+                        180
                 );
 
         inputParams.bottomMargin = 12;
 
-        root.addView(
-                input,
-                inputParams
-        );
+        root.addView(input, inputParams);
 
         voiceButton = new Button(this);
+        voiceButton.setText("🎙️  点击录音");
+        voiceButton.setTextSize(16);
+        voiceButton.setTextColor(TEXT);
+        voiceButton.setGravity(Gravity.CENTER);
+        voiceButton.setIncludeFontPadding(true);
+        voiceButton.setPadding(10, 5, 10, 5);
 
-        voiceButton.setText(
-                "🎙️ 语音输入"
-        );
-
-        voiceButton.setTextColor(
-                blue
-        );
-
-        voiceButton.setTextSize(
-                16
-        );
-
-        voiceButton.setGravity(
-                Gravity.CENTER
-        );
-
-        voiceButton.setAllCaps(
-                false
-        );
-
-        voiceButton.setPadding(
-                10,
-                5,
-                10,
-                5
-        );
-
-        voiceButton.setIncludeFontPadding(
-                true
-        );
-
-        voiceButton.setBackground(
-                roundBackground(
-                        Color.WHITE,
-                        blue,
-                        18
-                )
+        voiceButton.setOnClickListener(
+                v -> toggleRecording()
         );
 
         LinearLayout.LayoutParams voiceParams =
                 new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        -1,
                         90
                 );
 
         voiceParams.bottomMargin = 12;
 
-        root.addView(
-                voiceButton,
-                voiceParams
-        );
-
-        voiceButton.setOnClickListener(
-                v -> toggleSpeech()
-        );
+        root.addView(voiceButton, voiceParams);
 
         analyzeButton = new Button(this);
+        analyzeButton.setText("🤖 AI销售分析");
+        analyzeButton.setTextSize(18);
+        analyzeButton.setTextColor(Color.WHITE);
+        analyzeButton.setGravity(Gravity.CENTER);
 
-        analyzeButton.setText(
-                "🤖 AI销售分析"
-        );
+        GradientDrawable buttonBg =
+                new GradientDrawable();
 
-        analyzeButton.setTextColor(
-                Color.WHITE
-        );
+        buttonBg.setColor(BLUE);
+        buttonBg.setCornerRadius(22);
 
-        analyzeButton.setTextSize(
-                18
-        );
-
-        analyzeButton.setGravity(
-                Gravity.CENTER
-        );
-
-        analyzeButton.setAllCaps(
-                false
-        );
-
-        analyzeButton.setPadding(
-                10,
-                10,
-                10,
-                10
-        );
-
-        analyzeButton.setBackground(
-                roundBackground(
-                        blue,
-                        blue,
-                        20
-                )
-        );
-
-        LinearLayout.LayoutParams buttonParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        100
-                );
-
-        buttonParams.bottomMargin = 24;
-
-        root.addView(
-                analyzeButton,
-                buttonParams
-        );
+        analyzeButton.setBackground(buttonBg);
 
         analyzeButton.setOnClickListener(
                 v -> analyzeCustomer()
         );
 
+        root.addView(
+                analyzeButton,
+                new LinearLayout.LayoutParams(
+                        -1,
+                        100
+                )
+        );
+
         TextView resultTitle = new TextView(this);
-
-        resultTitle.setText(
-                "AI销售分析"
-        );
-
-        resultTitle.setTextColor(
-                dark
-        );
-
-        resultTitle.setTextSize(
-                19
-        );
-
+        resultTitle.setText("AI销售分析");
+        resultTitle.setTextColor(TEXT);
+        resultTitle.setTextSize(20);
         resultTitle.setTypeface(
                 null,
                 android.graphics.Typeface.BOLD
@@ -416,11 +250,11 @@ public class MainActivity extends Activity {
 
         LinearLayout.LayoutParams resultTitleParams =
                 new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
+                        -1,
+                        50
                 );
 
-        resultTitleParams.bottomMargin = 10;
+        resultTitleParams.topMargin = 18;
 
         root.addView(
                 resultTitle,
@@ -428,333 +262,88 @@ public class MainActivity extends Activity {
         );
 
         result = new TextView(this);
-
         result.setText(
-                "请输入客户消息，或者点击“🎙️语音输入”。\n\n" +
-                "然后点击“AI销售分析”。\n\n" +
-                "AI将帮助你分析：\n" +
-                "• 客户意向\n" +
-                "• 客户需求\n" +
-                "• 客户痛点\n" +
-                "• 客户顾虑\n" +
-                "• 成交可能性\n" +
-                "• 下一步跟进策略\n" +
-                "• 推荐销售话术"
+                "输入客户情况后，点击“AI销售分析”"
         );
+        result.setTextColor(TEXT);
+        result.setTextSize(16);
+        result.setGravity(Gravity.TOP | Gravity.LEFT);
+        result.setPadding(20, 20, 20, 20);
 
-        result.setTextColor(
-                dark
-        );
+        GradientDrawable resultBg =
+                new GradientDrawable();
 
-        result.setTextSize(
-                16
-        );
+        resultBg.setColor(CARD);
+        resultBg.setCornerRadius(20);
 
-        result.setGravity(
-                Gravity.TOP | Gravity.START
-        );
-
-        result.setLineSpacing(
-                6,
-                1.0f
-        );
-
-        result.setPadding(
-                20,
-                20,
-                20,
-                20
-        );
-
-        result.setBackground(
-                roundBackground(
-                        Color.WHITE,
-                        Color.rgb(225, 230, 238),
-                        18
-                )
-        );
+        result.setBackground(resultBg);
 
         LinearLayout.LayoutParams resultParams =
                 new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
+                        -1,
+                        420
                 );
 
-        resultParams.bottomMargin = 20;
-
-        root.addView(
-                result,
-                resultParams
-        );
+        root.addView(result, resultParams);
 
         TextView tips = new TextView(this);
 
         tips.setText(
-                "使用提示\n\n" +
-                "1. 可以直接输入客户消息\n" +
-                "2. 也可以点击语音输入\n" +
-                "3. 语音内容会自动进入客户消息框\n" +
-                "4. 再点击AI销售分析即可分析"
+                "使用方法：\n" +
+                "① 点击“点击录音”\n" +
+                "② 对着手机说客户情况\n" +
+                "③ 再次点击停止录音\n" +
+                "④ 系统自动转成文字\n" +
+                "⑤ 点击“AI销售分析”获取销售建议"
         );
 
-        tips.setTextColor(
-                Color.rgb(100, 110, 125)
-        );
+        tips.setTextColor(SUB);
+        tips.setTextSize(14);
+        tips.setPadding(5, 18, 5, 0);
 
-        tips.setTextSize(
-                14
-        );
-
-        tips.setLineSpacing(
-                5,
-                1.0f
-        );
-
-        tips.setPadding(
-                20,
-                20,
-                20,
-                20
-        );
-
-        tips.setBackground(
-                roundBackground(
-                        Color.rgb(240, 244, 249),
-                        Color.rgb(225, 230, 238),
-                        18
+        root.addView(
+                tips,
+                new LinearLayout.LayoutParams(
+                        -1,
+                        150
                 )
         );
 
-        root.addView(
-                tips
-        );
-
         scrollView = new ScrollView(this);
+        scrollView.setFillViewport(true);
 
-        scrollView.setFillViewport(
-                true
+        LinearLayout container =
+                new LinearLayout(this);
+
+        container.setOrientation(
+                LinearLayout.VERTICAL
         );
 
-        scrollView.addView(
-                root
+        container.addView(
+                root,
+                new LinearLayout.LayoutParams(
+                        -1,
+                        -2
+                )
         );
 
-        setContentView(
-                scrollView
-        );
+        scrollView.addView(container);
+
+        setContentView(scrollView);
     }
 
-    private void setupSpeechRecognizer() {
+    private void toggleRecording() {
 
-        try {
-
-            speechRecognizer =
-                    SpeechRecognizer.createSpeechRecognizer(
-                            this
-                    );
-
-            speechIntent =
-                    new Intent(
-                            RecognizerIntent.ACTION_RECOGNIZE_SPEECH
-                    );
-
-            speechIntent.putExtra(
-                    RecognizerIntent.EXTRA_LANGUAGE,
-                    "zh-CN"
-            );
-
-            speechIntent.putExtra(
-                    RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            );
-
-            speechIntent.putExtra(
-                    RecognizerIntent.EXTRA_PARTIAL_RESULTS,
-                    true
-            );
-
-            speechIntent.putExtra(
-                    RecognizerIntent.EXTRA_MAX_RESULTS,
-                    1
-            );
-
-            speechRecognizer.setRecognitionListener(
-                    new RecognitionListener() {
-
-                        @Override
-                        public void onReadyForSpeech(
-                                Bundle params) {
-
-                            runOnUiThread(() ->
-                                    voiceButton.setText(
-                                            "🔴 正在听，请说话..."
-                                    )
-                            );
-                        }
-
-                        @Override
-                        public void onBeginningOfSpeech() {
-                        }
-
-                        @Override
-                        public void onRmsChanged(
-                                float rmsdB) {
-                        }
-
-                        @Override
-                        public void onBufferReceived(
-                                byte[] buffer) {
-                        }
-
-                        @Override
-                        public void onEndOfSpeech() {
-
-                            runOnUiThread(() ->
-                                    voiceButton.setText(
-                                            "🎙️ 正在处理语音..."
-                                    )
-                            );
-                        }
-
-                        @Override
-                        public void onError(
-                                int error) {
-
-                            isListening = false;
-
-                            runOnUiThread(() -> {
-
-                                voiceButton.setText(
-                                        "🎙️ 语音输入"
-                                );
-
-                                Toast.makeText(
-                                        MainActivity.this,
-                                        getSpeechErrorMessage(error),
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            });
-                        }
-
-                        @Override
-                        public void onResults(
-                                Bundle results) {
-
-                            isListening = false;
-
-                            ArrayList<String> matches =
-                                    results.getStringArrayList(
-                                            SpeechRecognizer.RESULTS_RECOGNITION
-                                    );
-
-                            if (matches != null &&
-                                    !matches.isEmpty()) {
-
-                                String text =
-                                        matches.get(0);
-
-                                runOnUiThread(() -> {
-
-                                    input.setText(
-                                            text
-                                    );
-
-                                    input.setSelection(
-                                            input.length()
-                                    );
-
-                                    voiceButton.setText(
-                                            "🎙️ 语音输入"
-                                    );
-                                });
-
-                            } else {
-
-                                runOnUiThread(() -> {
-
-                                    voiceButton.setText(
-                                            "🎙️ 语音输入"
-                                    );
-
-                                    Toast.makeText(
-                                            MainActivity.this,
-                                            "没有识别到语音，请再说一次",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-                                });
-                            }
-                        }
-
-                        @Override
-                        public void onPartialResults(
-                                Bundle partialResults) {
-
-                            ArrayList<String> matches =
-                                    partialResults.getStringArrayList(
-                                            SpeechRecognizer.RESULTS_RECOGNITION
-                                    );
-
-                            if (matches != null &&
-                                    !matches.isEmpty()) {
-
-                                String text =
-                                        matches.get(0);
-
-                                runOnUiThread(() -> {
-
-                                    input.setText(
-                                            text
-                                    );
-
-                                    input.setSelection(
-                                            input.length()
-                                    );
-                                });
-                            }
-                        }
-
-                        @Override
-                        public void onEvent(
-                                int eventType,
-                                Bundle params) {
-                        }
-                    }
-            );
-
-        } catch (Exception e) {
-
-            speechRecognizer = null;
-
-            voiceButton.setEnabled(
-                    true
-            );
-
-            voiceButton.setText(
-                    "🎙️ 语音输入"
-            );
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
         }
     }
 
-    private void toggleSpeech() {
+    private void startRecording() {
 
-        if (isListening) {
-
-            if (speechRecognizer != null) {
-
-                speechRecognizer.stopListening();
-            }
-
-            isListening = false;
-
-            voiceButton.setText(
-                    "🎙️ 语音输入"
-            );
-
-            return;
-        }
-
-        if (android.os.Build.VERSION.SDK_INT >=
-                android.os.Build.VERSION_CODES.M) {
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
 
             if (checkSelfPermission(
                     Manifest.permission.RECORD_AUDIO
@@ -764,164 +353,127 @@ public class MainActivity extends Activity {
                         new String[]{
                                 Manifest.permission.RECORD_AUDIO
                         },
-                        1001
+                        RECORD_AUDIO_PERMISSION
                 );
 
                 return;
             }
         }
 
-        startSpeechRecognition();
-    }
-
-    private void startSpeechRecognition() {
-
-        if (speechRecognizer == null) {
-
-            Toast.makeText(
-                    this,
-                    "语音识别服务暂时不可用",
-                    Toast.LENGTH_LONG
-            ).show();
-
-            return;
-        }
-
         try {
 
-            isListening = true;
+            audioPath =
+                    getExternalCacheDir()
+                            .getAbsolutePath()
+                            + "/sales_record.m4a";
 
-            voiceButton.setText(
-                    "🔴 正在听，请说话..."
+            mediaRecorder = new MediaRecorder();
+
+            mediaRecorder.setAudioSource(
+                    MediaRecorder.AudioSource.MIC
             );
 
-            speechRecognizer.startListening(
-                    speechIntent
+            mediaRecorder.setOutputFormat(
+                    MediaRecorder.OutputFormat.MPEG_4
             );
 
-        } catch (Exception e) {
+            mediaRecorder.setAudioEncoder(
+                    MediaRecorder.AudioEncoder.AAC
+            );
 
-            isListening = false;
+            mediaRecorder.setAudioEncodingBitRate(
+                    128000
+            );
+
+            mediaRecorder.setAudioSamplingRate(
+                    44100
+            );
+
+            mediaRecorder.setOutputFile(
+                    audioPath
+            );
+
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+
+            isRecording = true;
 
             voiceButton.setText(
-                    "🎙️ 语音输入"
+                    "⏹️  停止录音"
             );
 
             Toast.makeText(
                     this,
-                    "启动语音识别失败",
-                    Toast.LENGTH_LONG
-            ).show();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode,
-            String[] permissions,
-            int[] grantResults) {
-
-        super.onRequestPermissionsResult(
-                requestCode,
-                permissions,
-                grantResults
-        );
-
-        if (requestCode == 1001) {
-
-            if (grantResults.length > 0 &&
-                    grantResults[0] ==
-                            PackageManager.PERMISSION_GRANTED) {
-
-                startSpeechRecognition();
-
-            } else {
-
-                Toast.makeText(
-                        this,
-                        "需要允许麦克风权限才能使用语音输入",
-                        Toast.LENGTH_LONG
-                ).show();
-            }
-        }
-    }
-
-    private String getSpeechErrorMessage(
-            int error) {
-
-        switch (error) {
-
-            case SpeechRecognizer.ERROR_AUDIO:
-
-                return "麦克风出现问题";
-
-            case SpeechRecognizer.ERROR_CLIENT:
-
-                return "语音识别客户端错误";
-
-            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-
-                return "没有麦克风权限";
-
-            case SpeechRecognizer.ERROR_NETWORK:
-
-                return "语音识别网络错误";
-
-            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-
-                return "语音识别网络超时";
-
-            case SpeechRecognizer.ERROR_NO_MATCH:
-
-                return "没有听清，请再说一次";
-
-            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-
-                return "语音识别正在使用";
-
-            case SpeechRecognizer.ERROR_SERVER:
-
-                return "语音识别服务器错误";
-
-            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-
-                return "没有检测到说话";
-
-            default:
-
-                return "语音识别失败，请重试";
-        }
-    }
-
-    private void analyzeCustomer() {
-
-        String message =
-                input.getText()
-                        .toString()
-                        .trim();
-
-        if (message.isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "请输入客户消息",
+                    "正在录音，请说话...",
                     Toast.LENGTH_SHORT
             ).show();
 
-            return;
+        } catch (Exception e) {
+
+            isRecording = false;
+
+            voiceButton.setText(
+                    "🎙️  点击录音"
+            );
+
+            Toast.makeText(
+                    this,
+                    "无法开始录音：" + e.getMessage(),
+                    Toast.LENGTH_LONG
+            ).show();
         }
+    }
 
-        analyzeButton.setEnabled(
-                false
-        );
+    private void stopRecording() {
 
-        analyzeButton.setText(
-                "正在分析..."
-        );
+        try {
 
-        result.setText(
-                "AI正在分析客户信息，请稍候..."
-        );
+            if (mediaRecorder != null) {
+
+                mediaRecorder.stop();
+                mediaRecorder.release();
+                mediaRecorder = null;
+            }
+
+            isRecording = false;
+
+            voiceButton.setText(
+                    "⏳  正在识别..."
+            );
+
+            voiceButton.setEnabled(false);
+
+            uploadAudio();
+
+        } catch (Exception e) {
+
+            isRecording = false;
+
+            if (mediaRecorder != null) {
+
+                try {
+                    mediaRecorder.release();
+                } catch (Exception ignored) {
+                }
+
+                mediaRecorder = null;
+            }
+
+            voiceButton.setEnabled(true);
+
+            voiceButton.setText(
+                    "🎙️  点击录音"
+            );
+
+            Toast.makeText(
+                    this,
+                    "录音结束失败：" + e.getMessage(),
+                    Toast.LENGTH_LONG
+            ).show();
+        }
+    }
+
+    private void uploadAudio() {
 
         new Thread(() -> {
 
@@ -930,15 +482,15 @@ public class MainActivity extends Activity {
             try {
 
                 URL url =
-                        new URL(API_URL);
+                        new URL(TRANSCRIBE_URL);
 
                 connection =
-                        (HttpURLConnection)
-                                url.openConnection();
+                        (HttpURLConnection) url.openConnection();
 
-                connection.setRequestMethod(
-                        "POST"
-                );
+                connection.setRequestMethod("POST");
+
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
 
                 connection.setConnectTimeout(
                         30000
@@ -948,38 +500,24 @@ public class MainActivity extends Activity {
                         60000
                 );
 
-                connection.setDoOutput(
-                        true
-                );
-
                 connection.setRequestProperty(
                         "Content-Type",
-                        "application/json"
+                        "audio/mp4"
                 );
 
-                JSONObject json =
-                        new JSONObject();
+                java.io.File file =
+                        new java.io.File(audioPath);
 
-                json.put(
-                        "message",
-                        message
-                );
-
-                byte[] data =
-                        json.toString()
-                                .getBytes(
-                                        StandardCharsets.UTF_8
-                                );
+                byte[] audioBytes =
+                        java.nio.file.Files.readAllBytes(
+                                file.toPath()
+                        );
 
                 OutputStream output =
                         connection.getOutputStream();
 
-                output.write(
-                        data
-                );
-
+                output.write(audioBytes);
                 output.flush();
-
                 output.close();
 
                 int responseCode =
@@ -1012,17 +550,13 @@ public class MainActivity extends Activity {
 
                 String line;
 
-                while ((line =
-                        reader.readLine()) != null) {
-
-                    response.append(
-                            line
-                    );
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
                 }
 
                 reader.close();
 
-                JSONObject responseJson =
+                JSONObject json =
                         new JSONObject(
                                 response.toString()
                         );
@@ -1030,74 +564,92 @@ public class MainActivity extends Activity {
                 if (responseCode >= 200 &&
                         responseCode < 300) {
 
-                    String aiResult =
-                            responseJson.optString(
-                                    "result",
-                                    "AI没有返回分析结果"
+                    final String text =
+                            json.optString(
+                                    "text",
+                                    ""
                             );
 
                     runOnUiThread(() -> {
 
-                        result.setText(
-                                aiResult
+                        voiceButton.setEnabled(true);
+
+                        voiceButton.setText(
+                                "🎙️  点击录音"
                         );
 
-                        analyzeButton.setEnabled(
-                                true
+                        if (text.trim().isEmpty()) {
+
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "没有识别到语音内容",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            return;
+                        }
+
+                        input.setText(text);
+                        input.setSelection(
+                                input.length()
                         );
 
-                        analyzeButton.setText(
-                                "🤖 AI销售分析"
-                        );
+                        Toast.makeText(
+                                MainActivity.this,
+                                "语音识别完成",
+                                Toast.LENGTH_SHORT
+                        ).show();
                     });
 
                 } else {
 
-                    String error =
-                            responseJson.optString(
+                    final String error =
+                            json.optString(
                                     "error",
-                                    response.toString()
+                                    "语音识别失败"
                             );
 
                     runOnUiThread(() -> {
 
-                        result.setText(
-                                "分析失败：\n\n" +
-                                        error
+                        voiceButton.setEnabled(true);
+
+                        voiceButton.setText(
+                                "🎙️  点击录音"
                         );
 
-                        analyzeButton.setEnabled(
-                                true
-                        );
-
-                        analyzeButton.setText(
-                                "🤖 AI销售分析"
-                        );
+                        Toast.makeText(
+                                MainActivity.this,
+                                error,
+                                Toast.LENGTH_LONG
+                        ).show();
                     });
                 }
 
             } catch (Exception e) {
 
+                final String error =
+                        e.getMessage() == null
+                                ? "网络或语音识别异常"
+                                : e.getMessage();
+
                 runOnUiThread(() -> {
 
-                    result.setText(
-                            "连接AI失败：\n\n" +
-                                    e.getMessage()
+                    voiceButton.setEnabled(true);
+
+                    voiceButton.setText(
+                            "🎙️  点击录音"
                     );
 
-                    analyzeButton.setEnabled(
-                            true
-                    );
-
-                    analyzeButton.setText(
-                            "🤖 AI销售分析"
-                    );
+                    Toast.makeText(
+                            MainActivity.this,
+                            "语音识别失败：" + error,
+                            Toast.LENGTH_LONG
+                    ).show();
                 });
 
             } finally {
 
                 if (connection != null) {
-
                     connection.disconnect();
                 }
             }
@@ -1105,40 +657,97 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    private GradientDrawable roundBackground(
-            int fillColor,
-            int strokeColor,
-            int radius) {
+    private void analyzeCustomer() {
 
-        GradientDrawable drawable =
-                new GradientDrawable();
+        String message =
+                input.getText()
+                        .toString()
+                        .trim();
 
-        drawable.setColor(
-                fillColor
-        );
+        if (message.isEmpty()) {
 
-        drawable.setCornerRadius(
-                radius
-        );
+            Toast.makeText(
+                    this,
+                    "请先输入客户情况，或者使用语音录入",
+                    Toast.LENGTH_SHORT
+            ).show();
 
-        drawable.setStroke(
-                1,
-                strokeColor
-        );
-
-        return drawable;
-    }
-
-    @Override
-    protected void onDestroy() {
-
-        if (speechRecognizer != null) {
-
-            speechRecognizer.destroy();
-
-            speechRecognizer = null;
+            return;
         }
 
-        super.onDestroy();
-    }
-}
+        analyzeButton.setEnabled(false);
+        analyzeButton.setText("⏳ AI分析中...");
+
+        result.setText(
+                "正在分析客户，请稍候..."
+        );
+
+        new Thread(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+
+                URL url =
+                        new URL(API_URL);
+
+                connection =
+                        (HttpURLConnection) url.openConnection();
+
+                connection.setRequestMethod("POST");
+
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+
+                connection.setConnectTimeout(
+                        30000
+                );
+
+                connection.setReadTimeout(
+                        60000
+                );
+
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "application/json; charset=UTF-8"
+                );
+
+                JSONObject body =
+                        new JSONObject();
+
+                body.put(
+                        "message",
+                        message
+                );
+
+                byte[] data =
+                        body.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
+
+                OutputStream output =
+                        connection.getOutputStream();
+
+                output.write(data);
+                output.flush();
+                output.close();
+
+                int responseCode =
+                        connection.getResponseCode();
+
+                InputStream inputStream;
+
+                if (responseCode >= 200 &&
+                        responseCode < 300) {
+
+                    inputStream =
+                            connection.getInputStream();
+
+                } else {
+
+                    inputStream =
+                            connection.getErrorStream();
+                }
+
+                BufferedReader read
