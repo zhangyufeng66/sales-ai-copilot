@@ -1,13 +1,7 @@
 package com.salesaicopilot;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
-import android.speech.RecognitionListener;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
@@ -17,38 +11,35 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Locale;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends Activity {
 
-    int blue = Color.rgb(22, 119, 255);
-    int green = Color.rgb(34, 180, 100);
-    int dark = Color.rgb(30, 30, 30);
+    private final int blue = Color.rgb(22, 119, 255);
+    private final int dark = Color.rgb(30, 30, 30);
 
-    EditText input;
-    TextView result;
-    TextView status;
+    private EditText input;
+    private TextView result;
+    private Button analyzeButton;
 
-    SpeechRecognizer speechRecognizer;
+    private static final String API_URL =
+            "https://sales-ai-copilot-beta.vercel.app/api/analyze";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         buildInterface();
-        initSpeech();
-
-        if (android.os.Build.VERSION.SDK_INT >= 23 &&
-                checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-                        != PackageManager.PERMISSION_GRANTED) {
-
-            requestPermissions(
-                    new String[]{Manifest.permission.RECORD_AUDIO},
-                    100
-            );
-        }
     }
 
     private void buildInterface() {
@@ -57,22 +48,22 @@ public class MainActivity extends Activity {
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(28, 35, 28, 35);
+        root.setPadding(28, 30, 28, 30);
         root.setBackgroundColor(Color.rgb(247, 249, 252));
 
         TextView title = new TextView(this);
         title.setText("销售AI副驾驶");
-        title.setTextSize(27);
+        title.setTextSize(28);
         title.setTextColor(dark);
         title.setGravity(Gravity.CENTER);
         title.setTypeface(null, 1);
 
         root.addView(title, new LinearLayout.LayoutParams(
-                -1, 75
+                -1, 70
         ));
 
         TextView subtitle = new TextView(this);
-        subtitle.setText("客户语音 → 实时转文字 → AI分析 → 建议回答");
+        subtitle.setText("DeepSeek AI · 客户分析 · 销售策略 · 智能话术");
         subtitle.setTextSize(14);
         subtitle.setTextColor(Color.GRAY);
         subtitle.setGravity(Gravity.CENTER);
@@ -81,93 +72,94 @@ public class MainActivity extends Activity {
                 -1, 55
         ));
 
-        status = new TextView(this);
-        status.setText("● 语音助手待机中");
-        status.setTextSize(15);
-        status.setTextColor(Color.GRAY);
-        status.setGravity(Gravity.CENTER);
-
-        root.addView(status, new LinearLayout.LayoutParams(
-                -1, 45
-        ));
-
         TextView customerTitle = new TextView(this);
-        customerTitle.setText("客户正在说：");
-        customerTitle.setTextSize(17);
+        customerTitle.setText("客户消息 / 客户情况");
+        customerTitle.setTextSize(18);
         customerTitle.setTextColor(dark);
         customerTitle.setTypeface(null, 1);
 
-        LinearLayout.LayoutParams ct =
-                new LinearLayout.LayoutParams(-1, 45);
-        ct.setMargins(0, 15, 0, 0);
+        LinearLayout.LayoutParams titleParams =
+                new LinearLayout.LayoutParams(-1, 50);
 
-        root.addView(customerTitle, ct);
+        titleParams.setMargins(0, 20, 0, 8);
+
+        root.addView(customerTitle, titleParams);
 
         input = new EditText(this);
-        input.setHint("语音识别后的客户内容会显示在这里...");
+        input.setHint(
+                "例如：客户说你们价格有点高，我再考虑一下..."
+        );
         input.setTextSize(17);
         input.setGravity(Gravity.TOP);
         input.setPadding(22, 20, 22, 20);
-        input.setBackground(roundBackground(Color.WHITE, 20));
+        input.setSingleLine(false);
+        input.setBackground(
+                roundBackground(Color.WHITE, 20)
+        );
 
         root.addView(input, new LinearLayout.LayoutParams(
-                -1, 190
+                -1, 220
         ));
 
-        Button voice = new Button(this);
-        voice.setText("🎙 开始语音识别");
-        voice.setTextSize(17);
-        voice.setTextColor(Color.WHITE);
-        voice.setBackground(roundBackground(green, 20));
+        analyzeButton = new Button(this);
+        analyzeButton.setText("🤖 DeepSeek AI分析");
+        analyzeButton.setTextSize(17);
+        analyzeButton.setTextColor(Color.WHITE);
+        analyzeButton.setBackground(
+                roundBackground(blue, 20)
+        );
 
-        LinearLayout.LayoutParams vp =
-                new LinearLayout.LayoutParams(-1, 70);
-        vp.setMargins(0, 18, 0, 12);
+        LinearLayout.LayoutParams buttonParams =
+                new LinearLayout.LayoutParams(-1, 72);
 
-        root.addView(voice, vp);
+        buttonParams.setMargins(0, 18, 0, 20);
 
-        Button analyze = new Button(this);
-        analyze.setText("🤖 AI分析客户");
-        analyze.setTextSize(17);
-        analyze.setTextColor(Color.WHITE);
-        analyze.setBackground(roundBackground(blue, 20));
-
-        root.addView(analyze, new LinearLayout.LayoutParams(
-                -1, 70
-        ));
+        root.addView(analyzeButton, buttonParams);
 
         TextView resultTitle = new TextView(this);
-        resultTitle.setText("AI销售建议");
-        resultTitle.setTextSize(18);
+        resultTitle.setText("AI销售分析");
+        resultTitle.setTextSize(19);
         resultTitle.setTextColor(dark);
         resultTitle.setTypeface(null, 1);
 
-        LinearLayout.LayoutParams rt =
-                new LinearLayout.LayoutParams(-1, 50);
-        rt.setMargins(0, 25, 0, 0);
-
-        root.addView(resultTitle, rt);
+        root.addView(resultTitle, new LinearLayout.LayoutParams(
+                -1, 50
+        ));
 
         result = new TextView(this);
-        result.setText("等待客户语音或消息...");
+        result.setText(
+                "等待输入客户消息...\n\n" +
+                "AI将分析：\n" +
+                "• 客户意向\n" +
+                "• 客户需求\n" +
+                "• 客户痛点\n" +
+                "• 客户顾虑\n" +
+                "• 成交可能性\n" +
+                "• 下一步跟进策略\n" +
+                "• 推荐销售话术"
+        );
+
         result.setTextSize(16);
         result.setTextColor(Color.DKGRAY);
         result.setPadding(22, 22, 22, 22);
         result.setGravity(Gravity.TOP);
-        result.setBackground(roundBackground(Color.WHITE, 20));
+        result.setBackground(
+                roundBackground(Color.WHITE, 20)
+        );
 
         root.addView(result, new LinearLayout.LayoutParams(
-                -1, 360
+                -1, 520
         ));
 
         TextView tip = new TextView(this);
+
         tip.setText(
-                "\n使用流程\n" +
-                "① 点击“开始语音识别”\n" +
-                "② 客户说话\n" +
-                "③ 识别结果自动进入客户消息\n" +
-                "④ 点击“AI分析客户”\n" +
-                "⑤ 获取客户意图、销售策略和推荐话术"
+                "\n使用方法\n" +
+                "① 输入客户说的话或客户情况\n" +
+                "② 点击“DeepSeek AI分析”\n" +
+                "③ AI分析客户意向和需求\n" +
+                "④ 给出下一步销售策略\n" +
+                "⑤ 自动生成推荐话术"
         );
 
         tip.setTextSize(14);
@@ -175,6 +167,7 @@ public class MainActivity extends Activity {
 
         LinearLayout.LayoutParams tipParams =
                 new LinearLayout.LayoutParams(-1, -2);
+
         tipParams.setMargins(5, 20, 5, 20);
 
         root.addView(tip, tipParams);
@@ -183,205 +176,188 @@ public class MainActivity extends Activity {
 
         setContentView(scrollView);
 
-        voice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startSpeechRecognition();
-            }
-        });
-
-        analyze.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                String message = input.getText().toString();
-
-                if (message.trim().isEmpty()) {
-                    result.setText("请先输入客户消息，或者点击“开始语音识别”。");
-                    return;
-                }
-
-                analyzeCustomer(message);
-            }
-        });
-    }
-
-    private void initSpeech() {
-
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            return;
-        }
-
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
-
-        speechRecognizer.setRecognitionListener(
-                new RecognitionListener() {
+        analyzeButton.setOnClickListener(
+                new View.OnClickListener() {
 
                     @Override
-                    public void onReadyForSpeech(Bundle params) {
-                        status.setText("● 正在听客户说话...");
-                        status.setTextColor(green);
-                    }
+                    public void onClick(View v) {
 
-                    @Override
-                    public void onBeginningOfSpeech() {
-                        status.setText("● 正在识别...");
-                    }
+                        String message =
+                                input.getText().toString().trim();
 
-                    @Override
-                    public void onRmsChanged(float rmsdB) {
-                    }
+                        if (message.isEmpty()) {
 
-                    @Override
-                    public void onBufferReceived(byte[] buffer) {
-                    }
+                            Toast.makeText(
+                                    MainActivity.this,
+                                    "请先输入客户消息",
+                                    Toast.LENGTH_SHORT
+                            ).show();
 
-                    @Override
-                    public void onEndOfSpeech() {
-                        status.setText("● 正在处理语音...");
-                    }
-
-                    @Override
-                    public void onError(int error) {
-                        status.setText("● 语音识别结束");
-                        status.setTextColor(Color.GRAY);
-                    }
-
-                    @Override
-                    public void onResults(Bundle results) {
-
-                        ArrayList<String> matches =
-                                results.getStringArrayList(
-                                        SpeechRecognizer.RESULTS_RECOGNITION
-                                );
-
-                        if (matches != null && matches.size() > 0) {
-
-                            String text = matches.get(0);
-
-                            input.setText(text);
-                            input.setSelection(text.length());
-
-                            status.setText("● 识别完成");
-                            status.setTextColor(blue);
+                            return;
                         }
-                    }
 
-                    @Override
-                    public void onPartialResults(Bundle partialResults) {
-
-                        ArrayList<String> matches =
-                                partialResults.getStringArrayList(
-                                        SpeechRecognizer.RESULTS_RECOGNITION
-                                );
-
-                        if (matches != null && matches.size() > 0) {
-
-                            input.setText(matches.get(0));
-                            input.setSelection(input.length());
-                        }
-                    }
-
-                    @Override
-                    public void onEvent(int eventType, Bundle params) {
+                        analyzeCustomer(message);
                     }
                 }
         );
-    }
-
-    private void startSpeechRecognition() {
-
-        if (speechRecognizer == null) {
-            result.setText("当前手机暂不支持语音识别。");
-            return;
-        }
-
-        Intent intent =
-                new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-
-        intent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-        );
-
-        intent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE,
-                Locale.CHINESE.toString()
-        );
-
-        intent.putExtra(
-                RecognizerIntent.EXTRA_PARTIAL_RESULTS,
-                true
-        );
-
-        speechRecognizer.startListening(intent);
     }
 
     private void analyzeCustomer(String message) {
 
-        String lower = message;
+        analyzeButton.setEnabled(false);
+        analyzeButton.setText("AI正在分析...");
 
-        if (lower.contains("贵") ||
-                lower.contains("价格") ||
-                lower.contains("便宜") ||
-                lower.contains("太高")) {
+        result.setText(
+                "DeepSeek 正在分析客户信息，请稍候..."
+        );
 
-            result.setText(
-                    "【客户意图】\n" +
-                    "价格异议 / 正在比较供应商\n\n" +
+        new Thread(new Runnable() {
 
-                    "【客户意向】\n" +
-                    "🟠 中高意向\n\n" +
+            @Override
+            public void run() {
 
-                    "【AI分析】\n" +
-                    "客户已经开始关注价格，说明对产品存在一定兴趣。" +
-                    "目前不建议直接降价，应先了解客户比较的具体维度。\n\n" +
+                try {
 
-                    "【销售建议】\n" +
-                    "① 不要立即主动降价\n" +
-                    "② 询问客户对比的是价格、配置还是服务\n" +
-                    "③ 强调产品价值和实际使用成本\n\n" +
+                    URL url = new URL(API_URL);
 
-                    "【推荐回答】\n" +
-                    "“我理解您的考虑。价格确实很重要，我想先了解一下，" +
-                    "您现在主要是单纯比较价格，还是产品配置、服务和后期成本也在一起比较？”"
-            );
+                    HttpURLConnection connection =
+                            (HttpURLConnection) url.openConnection();
 
-        } else if (lower.contains("考虑") ||
-                lower.contains("再看看") ||
-                lower.contains("商量")) {
+                    connection.setRequestMethod("POST");
+                    connection.setRequestProperty(
+                            "Content-Type",
+                            "application/json"
+                    );
 
-            result.setText(
-                    "【客户意图】\n" +
-                    "暂时犹豫 / 尚未决定\n\n" +
+                    connection.setConnectTimeout(15000);
+                    connection.setReadTimeout(30000);
 
-                    "【客户意向】\n" +
-                    "🟡 中等意向\n\n" +
+                    connection.setDoOutput(true);
 
-                    "【AI分析】\n" +
-                    "客户没有明确拒绝，但目前缺少推动成交的理由。" +
-                    "建议进一步寻找客户真正的顾虑。\n\n" +
+                    JSONObject request =
+                            new JSONObject();
 
-                    "【推荐回答】\n" +
-                    "“没问题，我也不着急让您现在决定。" +
-                    "我想先了解一下，您目前主要还有哪方面需要再考虑？" +
-                    "我针对这个问题给您详细说明一下。”"
-            );
+                    request.put("message", message);
 
-        } else {
+                    String json =
+                            request.toString();
 
-            result.setText(
-                    "【客户意图】\n" +
-                    "需要进一步判断\n\n" +
+                    OutputStream output =
+                            connection.getOutputStream();
 
-                    "【AI建议】\n" +
-                    "建议继续询问客户需求、预算、采购时间和当前使用方案。\n\n" +
+                    output.write(
+                            json.getBytes(
+                                    StandardCharsets.UTF_8
+                            )
+                    );
 
-                    "【推荐问题】\n" +
-                    "“方便了解一下您目前主要想解决哪方面的问题？" +
-                    "以及大概什么时候计划采购？”"
-            );
-        }
+                    output.flush();
+                    output.close();
+
+                    int responseCode =
+                            connection.getResponseCode();
+
+                    InputStream stream;
+
+                    if (responseCode >= 200 &&
+                            responseCode < 300) {
+
+                        stream =
+                                connection.getInputStream();
+
+                    } else {
+
+                        stream =
+                                connection.getErrorStream();
+                    }
+
+                    BufferedReader reader =
+                            new BufferedReader(
+                                    new InputStreamReader(
+                                            stream,
+                                            StandardCharsets.UTF_8
+                                    )
+                            );
+
+                    StringBuilder response =
+                            new StringBuilder();
+
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+
+                    reader.close();
+
+                    JSONObject jsonResponse =
+                            new JSONObject(
+                                    response.toString()
+                            );
+
+                    final String aiResult;
+
+                    if (jsonResponse.has("result")) {
+
+                        aiResult =
+                                jsonResponse.getString("result");
+
+                    } else if (jsonResponse.has("error")) {
+
+                        aiResult =
+                                "AI接口错误：\n" +
+                                jsonResponse.getString("error");
+
+                    } else {
+
+                        aiResult =
+                                "AI返回数据异常：\n" +
+                                response.toString();
+                    }
+
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            result.setText(aiResult);
+
+                            analyzeButton.setEnabled(true);
+                            analyzeButton.setText(
+                                    "🤖 DeepSeek AI分析"
+                            );
+                        }
+                    });
+
+                    connection.disconnect();
+
+                } catch (Exception e) {
+
+                    final String error =
+                            e.getMessage();
+
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            result.setText(
+                                    "连接AI失败\n\n" +
+                                    "错误信息：\n" +
+                                    error +
+                                    "\n\n请检查网络连接和服务器配置。"
+                            );
+
+                            analyzeButton.setEnabled(true);
+                            analyzeButton.setText(
+                                    "🤖 DeepSeek AI分析"
+                            );
+                        }
+                    });
+                }
+            }
+
+        }).start();
     }
 
     private GradientDrawable roundBackground(
@@ -395,15 +371,5 @@ public class MainActivity extends Activity {
         drawable.setCornerRadius(radius);
 
         return drawable;
-    }
-
-    @Override
-    protected void onDestroy() {
-
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-        }
-
-        super.onDestroy();
     }
 }
