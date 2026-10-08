@@ -138,10 +138,7 @@ public class MainActivity extends Activity {
 
         titleParams.bottomMargin = 8;
 
-        root.addView(
-                title,
-                titleParams
-        );
+        root.addView(title, titleParams);
 
         TextView subtitle = new TextView(this);
 
@@ -164,17 +161,11 @@ public class MainActivity extends Activity {
 
         subtitleParams.bottomMargin = 24;
 
-        root.addView(
-                subtitle,
-                subtitleParams
-        );
+        root.addView(subtitle, subtitleParams);
 
         TextView inputTitle = new TextView(this);
 
-        inputTitle.setText(
-                "客户消息 / 客户情况"
-        );
-
+        inputTitle.setText("客户消息 / 客户情况");
         inputTitle.setTextColor(dark);
         inputTitle.setTextSize(17);
 
@@ -191,10 +182,7 @@ public class MainActivity extends Activity {
 
         inputTitleParams.bottomMargin = 10;
 
-        root.addView(
-                inputTitle,
-                inputTitleParams
-        );
+        root.addView(inputTitle, inputTitleParams);
 
         input = new EditText(this);
 
@@ -238,17 +226,11 @@ public class MainActivity extends Activity {
 
         inputParams.bottomMargin = 12;
 
-        root.addView(
-                input,
-                inputParams
-        );
+        root.addView(input, inputParams);
 
         voiceButton = new Button(this);
 
-        voiceButton.setText(
-                "🎙️ 语音输入"
-        );
-
+        voiceButton.setText("🎙️ 语音输入");
         voiceButton.setTextColor(blue);
         voiceButton.setTextSize(17);
         voiceButton.setGravity(Gravity.CENTER);
@@ -270,10 +252,7 @@ public class MainActivity extends Activity {
 
         voiceParams.bottomMargin = 12;
 
-        root.addView(
-                voiceButton,
-                voiceParams
-        );
+        root.addView(voiceButton, voiceParams);
 
         voiceButton.setOnClickListener(
                 v -> toggleSpeech()
@@ -281,14 +260,8 @@ public class MainActivity extends Activity {
 
         analyzeButton = new Button(this);
 
-        analyzeButton.setText(
-                "🤖 AI销售分析"
-        );
-
-        analyzeButton.setTextColor(
-                Color.WHITE
-        );
-
+        analyzeButton.setText("🤖 AI销售分析");
+        analyzeButton.setTextColor(Color.WHITE);
         analyzeButton.setTextSize(18);
         analyzeButton.setGravity(Gravity.CENTER);
         analyzeButton.setAllCaps(false);
@@ -327,10 +300,7 @@ public class MainActivity extends Activity {
 
         TextView resultTitle = new TextView(this);
 
-        resultTitle.setText(
-                "AI销售分析"
-        );
-
+        resultTitle.setText("AI销售分析");
         resultTitle.setTextColor(dark);
         resultTitle.setTextSize(19);
 
@@ -612,7 +582,6 @@ public class MainActivity extends Activity {
                 }
         );
     }
-
     private void toggleSpeech() {
 
         if (isListening) {
@@ -778,4 +747,205 @@ public class MainActivity extends Activity {
                 URL url =
                         new URL(API_URL);
 
-              
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod(
+                        "POST"
+                );
+
+                connection.setConnectTimeout(
+                        30000
+                );
+
+                connection.setReadTimeout(
+                        60000
+                );
+
+                connection.setDoOutput(true);
+
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "application/json"
+                );
+
+                JSONObject json =
+                        new JSONObject();
+
+                json.put(
+                        "message",
+                        message
+                );
+
+                byte[] data =
+                        json.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
+
+                OutputStream output =
+                        connection.getOutputStream();
+
+                output.write(data);
+                output.flush();
+                output.close();
+
+                int responseCode =
+                        connection.getResponseCode();
+
+                InputStream inputStream;
+
+                if (responseCode >= 200 &&
+                        responseCode < 300) {
+
+                    inputStream =
+                            connection.getInputStream();
+
+                } else {
+
+                    inputStream =
+                            connection.getErrorStream();
+                }
+
+                BufferedReader reader =
+                        new BufferedReader(
+                                new InputStreamReader(
+                                        inputStream,
+                                        StandardCharsets.UTF_8
+                                )
+                        );
+
+                StringBuilder response =
+                        new StringBuilder();
+
+                String line;
+
+                while ((line =
+                        reader.readLine()) != null) {
+
+                    response.append(line);
+                }
+
+                reader.close();
+
+                JSONObject responseJson =
+                        new JSONObject(
+                                response.toString()
+                        );
+
+                if (responseCode >= 200 &&
+                        responseCode < 300) {
+
+                    String aiResult =
+                            responseJson.optString(
+                                    "result",
+                                    "AI没有返回分析结果"
+                            );
+
+                    runOnUiThread(() -> {
+
+                        result.setText(
+                                aiResult
+                        );
+
+                        analyzeButton.setEnabled(
+                                true
+                        );
+
+                        analyzeButton.setText(
+                                "🤖 AI销售分析"
+                        );
+                    });
+
+                } else {
+
+                    String error =
+                            responseJson.optString(
+                                    "error",
+                                    response.toString()
+                            );
+
+                    runOnUiThread(() -> {
+
+                        result.setText(
+                                "分析失败：\n\n" +
+                                        error
+                        );
+
+                        analyzeButton.setEnabled(
+                                true
+                        );
+
+                        analyzeButton.setText(
+                                "🤖 AI销售分析"
+                        );
+                    });
+                }
+
+            } catch (Exception e) {
+
+                runOnUiThread(() -> {
+
+                    result.setText(
+                            "连接AI失败：\n\n" +
+                                    e.getMessage()
+                    );
+
+                    analyzeButton.setEnabled(
+                            true
+                    );
+
+                    analyzeButton.setText(
+                            "🤖 AI销售分析"
+                    );
+                });
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
+    }
+
+    private GradientDrawable roundBackground(
+            int fillColor,
+            int strokeColor,
+            int radius) {
+
+        GradientDrawable drawable =
+                new GradientDrawable();
+
+        drawable.setColor(fillColor);
+
+        drawable.setCornerRadius(
+                radius
+        );
+
+        drawable.setStroke(
+                1,
+                strokeColor
+        );
+
+        return drawable;
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        if (speechRecognizer != null) {
+
+            speechRecognizer.destroy();
+
+            speechRecognizer = null;
+        }
+
+super.onDestroy();
+}
+
+}
+
+}
