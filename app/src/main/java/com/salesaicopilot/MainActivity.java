@@ -6,6 +6,9 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -27,10 +30,13 @@ public class MainActivity extends Activity {
 
     private final int blue = Color.rgb(22, 119, 255);
     private final int dark = Color.rgb(30, 30, 30);
+    private final int background = Color.rgb(247, 249, 252);
 
     private EditText input;
     private TextView result;
     private Button analyzeButton;
+    private ScrollView scrollView;
+    private LinearLayout root;
 
     private static final String API_URL =
             "https://sales-ai-copilot-beta.vercel.app/api/analyze";
@@ -39,29 +45,88 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setupStatusBar();
+
         buildInterface();
     }
 
+    // =========================================================
+    // 状态栏适配
+    // =========================================================
+
+    private void setupStatusBar() {
+
+        Window window = getWindow();
+
+        window.setStatusBarColor(background);
+
+        if (android.os.Build.VERSION.SDK_INT >=
+                android.os.Build.VERSION_CODES.M) {
+
+            window.getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            );
+        }
+    }
+
+    // =========================================================
+    // 创建界面
+    // =========================================================
+
     private void buildInterface() {
 
-        ScrollView scrollView = new ScrollView(this);
+        scrollView = new ScrollView(this);
 
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(28, 30, 28, 30);
-        root.setBackgroundColor(Color.rgb(247, 249, 252));
+        scrollView.setFillViewport(true);
 
-        // =========================
-        // 页面标题
-        // =========================
+        scrollView.setBackgroundColor(
+                background
+        );
+
+        root = new LinearLayout(this);
+
+        root.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        // 顶部增加安全距离
+        root.setPadding(
+                28,
+                65,
+                28,
+                35
+        );
+
+        root.setBackgroundColor(
+                background
+        );
+
+        // =====================================================
+        // 主标题
+        // =====================================================
 
         TextView title = new TextView(this);
 
-        title.setText("销售AI副驾驶");
-        title.setTextSize(28);
-        title.setTextColor(dark);
-        title.setGravity(Gravity.CENTER);
-        title.setTypeface(null, 1);
+        title.setText(
+                "销售AI副驾驶"
+        );
+
+        title.setTextSize(
+                28
+        );
+
+        title.setTextColor(
+                dark
+        );
+
+        title.setGravity(
+                Gravity.CENTER
+        );
+
+        title.setTypeface(
+                null,
+                1
+        );
 
         root.addView(
                 title,
@@ -71,9 +136,9 @@ public class MainActivity extends Activity {
                 )
         );
 
-        // =========================
+        // =====================================================
         // 副标题
-        // =========================
+        // =====================================================
 
         TextView subtitle = new TextView(this);
 
@@ -81,9 +146,17 @@ public class MainActivity extends Activity {
                 "DeepSeek AI · 客户分析 · 销售策略 · 智能话术"
         );
 
-        subtitle.setTextSize(14);
-        subtitle.setTextColor(Color.GRAY);
-        subtitle.setGravity(Gravity.CENTER);
+        subtitle.setTextSize(
+                14
+        );
+
+        subtitle.setTextColor(
+                Color.GRAY
+        );
+
+        subtitle.setGravity(
+                Gravity.CENTER
+        );
 
         root.addView(
                 subtitle,
@@ -93,24 +166,36 @@ public class MainActivity extends Activity {
                 )
         );
 
-        // =========================
-        // 客户消息标题
-        // =========================
+        // =====================================================
+        // 客户信息标题
+        // =====================================================
 
         TextView customerTitle = new TextView(this);
 
-        customerTitle.setText("客户消息 / 客户情况");
-        customerTitle.setTextSize(18);
-        customerTitle.setTextColor(dark);
-        customerTitle.setTypeface(null, 1);
+        customerTitle.setText(
+                "客户消息 / 客户情况"
+        );
 
-        LinearLayout.LayoutParams titleParams =
+        customerTitle.setTextSize(
+                18
+        );
+
+        customerTitle.setTextColor(
+                dark
+        );
+
+        customerTitle.setTypeface(
+                null,
+                1
+        );
+
+        LinearLayout.LayoutParams customerTitleParams =
                 new LinearLayout.LayoutParams(
                         -1,
                         50
                 );
 
-        titleParams.setMargins(
+        customerTitleParams.setMargins(
                 0,
                 20,
                 0,
@@ -119,12 +204,12 @@ public class MainActivity extends Activity {
 
         root.addView(
                 customerTitle,
-                titleParams
+                customerTitleParams
         );
 
-        // =========================
+        // =====================================================
         // 客户输入框
-        // =========================
+        // =====================================================
 
         input = new EditText(this);
 
@@ -132,7 +217,9 @@ public class MainActivity extends Activity {
                 "例如：客户说你们价格有点高，我再考虑一下..."
         );
 
-        input.setTextSize(17);
+        input.setTextSize(
+                17
+        );
 
         input.setGravity(
                 Gravity.TOP
@@ -145,7 +232,9 @@ public class MainActivity extends Activity {
                 20
         );
 
-        input.setSingleLine(false);
+        input.setSingleLine(
+                false
+        );
 
         input.setBackground(
                 roundBackground(
@@ -162,9 +251,9 @@ public class MainActivity extends Activity {
                 )
         );
 
-        // =========================
+        // =====================================================
         // AI销售分析按钮
-        // =========================
+        // =====================================================
 
         analyzeButton = new Button(this);
 
@@ -172,10 +261,31 @@ public class MainActivity extends Activity {
                 "🤖 AI销售分析"
         );
 
-        analyzeButton.setTextSize(18);
+        analyzeButton.setTextSize(
+                18
+        );
 
         analyzeButton.setTextColor(
                 Color.WHITE
+        );
+
+        analyzeButton.setGravity(
+                Gravity.CENTER
+        );
+
+        analyzeButton.setAllCaps(
+                false
+        );
+
+        analyzeButton.setMinHeight(
+                100
+        );
+
+        analyzeButton.setPadding(
+                20,
+                10,
+                20,
+                10
         );
 
         analyzeButton.setBackground(
@@ -185,7 +295,6 @@ public class MainActivity extends Activity {
                 )
         );
 
-        // 加大按钮
         LinearLayout.LayoutParams buttonParams =
                 new LinearLayout.LayoutParams(
                         -1,
@@ -199,30 +308,14 @@ public class MainActivity extends Activity {
                 24
         );
 
-        // 防止 Mate X 上按钮文字被裁切
-        analyzeButton.setMinHeight(100);
-
-        analyzeButton.setPadding(
-                20,
-                10,
-                20,
-                10
-        );
-
-        analyzeButton.setGravity(
-                Gravity.CENTER
-        );
-
-        analyzeButton.setAllCaps(false);
-
         root.addView(
                 analyzeButton,
                 buttonParams
         );
 
-        // =========================
-        // AI销售分析结果标题
-        // =========================
+        // =====================================================
+        // 分析结果标题
+        // =====================================================
 
         TextView resultTitle = new TextView(this);
 
@@ -230,7 +323,9 @@ public class MainActivity extends Activity {
                 "AI销售分析"
         );
 
-        resultTitle.setTextSize(19);
+        resultTitle.setTextSize(
+                19
+        );
 
         resultTitle.setTextColor(
                 dark
@@ -249,9 +344,9 @@ public class MainActivity extends Activity {
                 )
         );
 
-        // =========================
-        // AI分析结果
-        // =========================
+        // =====================================================
+        // 分析结果
+        // =====================================================
 
         result = new TextView(this);
 
@@ -267,10 +362,16 @@ public class MainActivity extends Activity {
                 "• 推荐销售话术"
         );
 
-        result.setTextSize(16);
+        result.setTextSize(
+                16
+        );
 
         result.setTextColor(
                 Color.DKGRAY
+        );
+
+        result.setGravity(
+                Gravity.TOP
         );
 
         result.setPadding(
@@ -278,10 +379,6 @@ public class MainActivity extends Activity {
                 22,
                 22,
                 22
-        );
-
-        result.setGravity(
-                Gravity.TOP
         );
 
         result.setBackground(
@@ -299,9 +396,9 @@ public class MainActivity extends Activity {
                 )
         );
 
-        // =========================
+        // =====================================================
         // 使用说明
-        // =========================
+        // =====================================================
 
         TextView tip = new TextView(this);
 
@@ -314,7 +411,9 @@ public class MainActivity extends Activity {
                 "⑤ 自动生成推荐话术"
         );
 
-        tip.setTextSize(14);
+        tip.setTextSize(
+                14
+        );
 
         tip.setTextColor(
                 Color.GRAY
@@ -346,9 +445,9 @@ public class MainActivity extends Activity {
                 scrollView
         );
 
-        // =========================
-        // 点击AI销售分析
-        // =========================
+        // =====================================================
+        // 按钮点击
+        // =====================================================
 
         analyzeButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -380,9 +479,9 @@ public class MainActivity extends Activity {
         );
     }
 
-    // =========================
-    // 调用AI接口
-    // =========================
+    // =========================================================
+    // AI分析
+    // =========================================================
 
     private void analyzeCustomer(
             String message) {
@@ -458,6 +557,7 @@ public class MainActivity extends Activity {
                             );
 
                             output.flush();
+
                             output.close();
 
                             int responseCode =
@@ -608,9 +708,9 @@ public class MainActivity extends Activity {
         ).start();
     }
 
-    // =========================
+    // =========================================================
     // 圆角背景
-    // =========================
+    // =========================================================
 
     private GradientDrawable roundBackground(
             int color,
