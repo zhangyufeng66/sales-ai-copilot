@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,8 +31,10 @@ jobs:
       - name: 编译 APK
         run: gradle assembleDebug
 
-      - name: 保存 APK
-        uses: actions/upload-artifact@v4
+      - name: 创建 Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: sales-ai-copilot-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          tag_name: v1.0.${{ github.run_number }}
+          name: 销售AI副驾驶 v1.0.${{ github.run_number }}
+          files: app/build/outputs/apk/debug/app-debug.apk
+          generate_release_notes: true
