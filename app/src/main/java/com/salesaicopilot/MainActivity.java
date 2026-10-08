@@ -62,7 +62,9 @@ public class MainActivity extends Activity {
     }
 
     private void setupStatusBar() {
+
         Window window = getWindow();
+
         window.setStatusBarColor(background);
 
         if (android.os.Build.VERSION.SDK_INT >=
@@ -77,8 +79,14 @@ public class MainActivity extends Activity {
     private void buildInterface() {
 
         root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(background);
+
+        root.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        root.setBackgroundColor(
+                background
+        );
 
         final int baseLeft = 28;
         final int baseTop = 12;
@@ -92,40 +100,53 @@ public class MainActivity extends Activity {
                 baseBottom
         );
 
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
+        root.setOnApplyWindowInsetsListener(
+                (v, insets) -> {
 
-            int statusBarHeight = 0;
+                    int statusBarHeight = 0;
 
-            if (android.os.Build.VERSION.SDK_INT >=
-                    android.os.Build.VERSION_CODES.R) {
+                    if (android.os.Build.VERSION.SDK_INT >=
+                            android.os.Build.VERSION_CODES.R) {
 
-                statusBarHeight =
-                        insets.getInsets(
-                                WindowInsets.Type.statusBars()
-                        ).top;
+                        statusBarHeight =
+                                insets.getInsets(
+                                        WindowInsets.Type.statusBars()
+                                ).top;
 
-            } else {
+                    } else {
 
-                statusBarHeight =
-                        insets.getSystemWindowInsetTop();
-            }
+                        statusBarHeight =
+                                insets.getSystemWindowInsetTop();
+                    }
 
-            v.setPadding(
-                    baseLeft,
-                    baseTop + statusBarHeight,
-                    baseRight,
-                    baseBottom
-            );
+                    v.setPadding(
+                            baseLeft,
+                            baseTop + statusBarHeight,
+                            baseRight,
+                            baseBottom
+                    );
 
-            return insets;
-        });
+                    return insets;
+                }
+        );
 
         TextView title = new TextView(this);
 
-        title.setText("销售AI副驾驶");
-        title.setTextColor(dark);
-        title.setTextSize(28);
-        title.setGravity(Gravity.CENTER);
+        title.setText(
+                "销售AI副驾驶"
+        );
+
+        title.setTextColor(
+                dark
+        );
+
+        title.setTextSize(
+                28
+        );
+
+        title.setGravity(
+                Gravity.CENTER
+        );
 
         title.setTypeface(
                 null,
@@ -155,8 +176,13 @@ public class MainActivity extends Activity {
                 Color.rgb(100, 110, 125)
         );
 
-        subtitle.setTextSize(14);
-        subtitle.setGravity(Gravity.CENTER);
+        subtitle.setTextSize(
+                14
+        );
+
+        subtitle.setGravity(
+                Gravity.CENTER
+        );
 
         LinearLayout.LayoutParams subtitleParams =
                 new LinearLayout.LayoutParams(
@@ -177,8 +203,13 @@ public class MainActivity extends Activity {
                 "客户消息 / 客户情况"
         );
 
-        inputTitle.setTextColor(dark);
-        inputTitle.setTextSize(17);
+        inputTitle.setTextColor(
+                dark
+        );
+
+        inputTitle.setTextSize(
+                17
+        );
 
         inputTitle.setTypeface(
                 null,
@@ -204,8 +235,13 @@ public class MainActivity extends Activity {
                 "例如：客户说你们价格有点高，我再考虑一下..."
         );
 
-        input.setTextSize(16);
-        input.setTextColor(dark);
+        input.setTextSize(
+                16
+        );
+
+        input.setTextColor(
+                dark
+        );
 
         input.setHintTextColor(
                 Color.rgb(150, 155, 165)
@@ -222,7 +258,9 @@ public class MainActivity extends Activity {
                 18
         );
 
-        input.setMinHeight(150);
+        input.setMinHeight(
+                150
+        );
 
         input.setBackground(
                 roundBackground(
@@ -251,22 +289,31 @@ public class MainActivity extends Activity {
                 "🎙️ 语音输入"
         );
 
-        voiceButton.setTextColor(blue);
+        voiceButton.setTextColor(
+                blue
+        );
 
-        // 适配华为 Mate XT
-        voiceButton.setTextSize(16);
+        voiceButton.setTextSize(
+                16
+        );
 
         voiceButton.setGravity(
                 Gravity.CENTER
         );
 
-        voiceButton.setAllCaps(false);
+        voiceButton.setAllCaps(
+                false
+        );
 
         voiceButton.setPadding(
                 10,
                 5,
                 10,
                 5
+        );
+
+        voiceButton.setIncludeFontPadding(
+                true
         );
 
         voiceButton.setBackground(
@@ -304,13 +351,17 @@ public class MainActivity extends Activity {
                 Color.WHITE
         );
 
-        analyzeButton.setTextSize(18);
+        analyzeButton.setTextSize(
+                18
+        );
 
         analyzeButton.setGravity(
                 Gravity.CENTER
         );
 
-        analyzeButton.setAllCaps(false);
+        analyzeButton.setAllCaps(
+                false
+        );
 
         analyzeButton.setPadding(
                 10,
@@ -350,8 +401,13 @@ public class MainActivity extends Activity {
                 "AI销售分析"
         );
 
-        resultTitle.setTextColor(dark);
-        resultTitle.setTextSize(19);
+        resultTitle.setTextColor(
+                dark
+        );
+
+        resultTitle.setTextSize(
+                19
+        );
 
         resultTitle.setTypeface(
                 null,
@@ -386,8 +442,13 @@ public class MainActivity extends Activity {
                 "• 推荐销售话术"
         );
 
-        result.setTextColor(dark);
-        result.setTextSize(16);
+        result.setTextColor(
+                dark
+        );
+
+        result.setTextSize(
+                16
+        );
 
         result.setGravity(
                 Gravity.TOP | Gravity.START
@@ -440,7 +501,9 @@ public class MainActivity extends Activity {
                 Color.rgb(100, 110, 125)
         );
 
-        tips.setTextSize(14);
+        tips.setTextSize(
+                14
+        );
 
         tips.setLineSpacing(
                 5,
@@ -462,181 +525,224 @@ public class MainActivity extends Activity {
                 )
         );
 
-        root.addView(tips);
+        root.addView(
+                tips
+        );
 
         scrollView = new ScrollView(this);
 
-        scrollView.setFillViewport(true);
+        scrollView.setFillViewport(
+                true
+        );
 
-        scrollView.addView(root);
+        scrollView.addView(
+                root
+        );
 
-        setContentView(scrollView);
+        setContentView(
+                scrollView
+        );
     }
 
     private void setupSpeechRecognizer() {
 
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+        try {
 
-            voiceButton.setEnabled(false);
+            speechRecognizer =
+                    SpeechRecognizer.createSpeechRecognizer(
+                            this
+                    );
 
-            voiceButton.setText(
-                    "🎙️ 当前设备不支持语音识别"
+            speechIntent =
+                    new Intent(
+                            RecognizerIntent.ACTION_RECOGNIZE_SPEECH
+                    );
+
+            speechIntent.putExtra(
+                    RecognizerIntent.EXTRA_LANGUAGE,
+                    "zh-CN"
             );
 
-            return;
-        }
+            speechIntent.putExtra(
+                    RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            );
 
-        speechRecognizer =
-                SpeechRecognizer.createSpeechRecognizer(this);
+            speechIntent.putExtra(
+                    RecognizerIntent.EXTRA_PARTIAL_RESULTS,
+                    true
+            );
 
-        speechIntent =
-                new Intent(
-                        RecognizerIntent.ACTION_RECOGNIZE_SPEECH
-                );
+            speechIntent.putExtra(
+                    RecognizerIntent.EXTRA_MAX_RESULTS,
+                    1
+            );
 
-        speechIntent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE,
-                "zh-CN"
-        );
+            speechRecognizer.setRecognitionListener(
+                    new RecognitionListener() {
 
-        speechIntent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-        );
+                        @Override
+                        public void onReadyForSpeech(
+                                Bundle params) {
 
-        speechIntent.putExtra(
-                RecognizerIntent.EXTRA_PARTIAL_RESULTS,
-                true
-        );
-
-        speechRecognizer.setRecognitionListener(
-                new RecognitionListener() {
-
-                    @Override
-                    public void onReadyForSpeech(
-                            Bundle params) {
-
-                        runOnUiThread(() ->
-                                voiceButton.setText(
-                                        "🔴 正在听，请说话..."
-                                )
-                        );
-                    }
-
-                    @Override
-                    public void onBeginningOfSpeech() {
-                    }
-
-                    @Override
-                    public void onRmsChanged(
-                            float rmsdB) {
-                    }
-
-                    @Override
-                    public void onBufferReceived(
-                            byte[] buffer) {
-                    }
-
-                    @Override
-                    public void onEndOfSpeech() {
-
-                        runOnUiThread(() ->
-                                voiceButton.setText(
-                                        "🎙️ 正在处理语音..."
-                                )
-                        );
-                    }
-
-                    @Override
-                    public void onError(
-                            int error) {
-
-                        isListening = false;
-
-                        runOnUiThread(() -> {
-
-                            voiceButton.setText(
-                                    "🎙️ 语音输入"
+                            runOnUiThread(() ->
+                                    voiceButton.setText(
+                                            "🔴 正在听，请说话..."
+                                    )
                             );
+                        }
 
-                            Toast.makeText(
-                                    MainActivity.this,
-                                    getSpeechErrorMessage(error),
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        });
-                    }
+                        @Override
+                        public void onBeginningOfSpeech() {
+                        }
 
-                    @Override
-                    public void onResults(
-                            Bundle results) {
+                        @Override
+                        public void onRmsChanged(
+                                float rmsdB) {
+                        }
 
-                        isListening = false;
+                        @Override
+                        public void onBufferReceived(
+                                byte[] buffer) {
+                        }
 
-                        ArrayList<String> matches =
-                                results.getStringArrayList(
-                                        SpeechRecognizer.RESULTS_RECOGNITION
-                                );
+                        @Override
+                        public void onEndOfSpeech() {
 
-                        if (matches != null &&
-                                !matches.isEmpty()) {
+                            runOnUiThread(() ->
+                                    voiceButton.setText(
+                                            "🎙️ 正在处理语音..."
+                                    )
+                            );
+                        }
 
-                            String text =
-                                    matches.get(0);
+                        @Override
+                        public void onError(
+                                int error) {
+
+                            isListening = false;
 
                             runOnUiThread(() -> {
-
-                                input.setText(text);
-
-                                input.setSelection(
-                                        input.length()
-                                );
 
                                 voiceButton.setText(
                                         "🎙️ 语音输入"
                                 );
+
+                                Toast.makeText(
+                                        MainActivity.this,
+                                        getSpeechErrorMessage(error),
+                                        Toast.LENGTH_SHORT
+                                ).show();
                             });
                         }
-                    }
 
-                    @Override
-                    public void onPartialResults(
-                            Bundle partialResults) {
+                        @Override
+                        public void onResults(
+                                Bundle results) {
 
-                        ArrayList<String> matches =
-                                partialResults.getStringArrayList(
-                                        SpeechRecognizer.RESULTS_RECOGNITION
-                                );
+                            isListening = false;
 
-                        if (matches != null &&
-                                !matches.isEmpty()) {
+                            ArrayList<String> matches =
+                                    results.getStringArrayList(
+                                            SpeechRecognizer.RESULTS_RECOGNITION
+                                    );
 
-                            String text =
-                                    matches.get(0);
+                            if (matches != null &&
+                                    !matches.isEmpty()) {
 
-                            runOnUiThread(() -> {
+                                String text =
+                                        matches.get(0);
 
-                                input.setText(text);
+                                runOnUiThread(() -> {
 
-                                input.setSelection(
-                                        input.length()
-                                );
-                            });
+                                    input.setText(
+                                            text
+                                    );
+
+                                    input.setSelection(
+                                            input.length()
+                                    );
+
+                                    voiceButton.setText(
+                                            "🎙️ 语音输入"
+                                    );
+                                });
+
+                            } else {
+
+                                runOnUiThread(() -> {
+
+                                    voiceButton.setText(
+                                            "🎙️ 语音输入"
+                                    );
+
+                                    Toast.makeText(
+                                            MainActivity.this,
+                                            "没有识别到语音，请再说一次",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onPartialResults(
+                                Bundle partialResults) {
+
+                            ArrayList<String> matches =
+                                    partialResults.getStringArrayList(
+                                            SpeechRecognizer.RESULTS_RECOGNITION
+                                    );
+
+                            if (matches != null &&
+                                    !matches.isEmpty()) {
+
+                                String text =
+                                        matches.get(0);
+
+                                runOnUiThread(() -> {
+
+                                    input.setText(
+                                            text
+                                    );
+
+                                    input.setSelection(
+                                            input.length()
+                                    );
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onEvent(
+                                int eventType,
+                                Bundle params) {
                         }
                     }
+            );
 
-                    @Override
-                    public void onEvent(
-                            int eventType,
-                            Bundle params) {
-                    }
-                }
-        );
-    }    private void toggleSpeech() {
+        } catch (Exception e) {
+
+            speechRecognizer = null;
+
+            voiceButton.setEnabled(
+                    true
+            );
+
+            voiceButton.setText(
+                    "🎙️ 语音输入"
+            );
+        }
+    }
+
+    private void toggleSpeech() {
 
         if (isListening) {
 
-            speechRecognizer.stopListening();
+            if (speechRecognizer != null) {
+
+                speechRecognizer.stopListening();
+            }
 
             isListening = false;
 
@@ -674,22 +780,39 @@ public class MainActivity extends Activity {
 
             Toast.makeText(
                     this,
-                    "当前设备暂不支持语音识别",
-                    Toast.LENGTH_SHORT
+                    "语音识别服务暂时不可用",
+                    Toast.LENGTH_LONG
             ).show();
 
             return;
         }
 
-        isListening = true;
+        try {
 
-        voiceButton.setText(
-                "🔴 正在听，请说话..."
-        );
+            isListening = true;
 
-        speechRecognizer.startListening(
-                speechIntent
-        );
+            voiceButton.setText(
+                    "🔴 正在听，请说话..."
+            );
+
+            speechRecognizer.startListening(
+                    speechIntent
+            );
+
+        } catch (Exception e) {
+
+            isListening = false;
+
+            voiceButton.setText(
+                    "🎙️ 语音输入"
+            );
+
+            Toast.makeText(
+                    this,
+                    "启动语音识别失败",
+                    Toast.LENGTH_LONG
+            ).show();
+        }
     }
 
     @Override
@@ -729,33 +852,43 @@ public class MainActivity extends Activity {
         switch (error) {
 
             case SpeechRecognizer.ERROR_AUDIO:
+
                 return "麦克风出现问题";
 
             case SpeechRecognizer.ERROR_CLIENT:
+
                 return "语音识别客户端错误";
 
             case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+
                 return "没有麦克风权限";
 
             case SpeechRecognizer.ERROR_NETWORK:
+
                 return "语音识别网络错误";
 
             case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+
                 return "语音识别网络超时";
 
             case SpeechRecognizer.ERROR_NO_MATCH:
+
                 return "没有听清，请再说一次";
 
             case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+
                 return "语音识别正在使用";
 
             case SpeechRecognizer.ERROR_SERVER:
+
                 return "语音识别服务器错误";
 
             case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+
                 return "没有检测到说话";
 
             default:
+
                 return "语音识别失败，请重试";
         }
     }
@@ -778,7 +911,9 @@ public class MainActivity extends Activity {
             return;
         }
 
-        analyzeButton.setEnabled(false);
+        analyzeButton.setEnabled(
+                false
+        );
 
         analyzeButton.setText(
                 "正在分析..."
@@ -813,7 +948,9 @@ public class MainActivity extends Activity {
                         60000
                 );
 
-                connection.setDoOutput(true);
+                connection.setDoOutput(
+                        true
+                );
 
                 connection.setRequestProperty(
                         "Content-Type",
@@ -837,7 +974,9 @@ public class MainActivity extends Activity {
                 OutputStream output =
                         connection.getOutputStream();
 
-                output.write(data);
+                output.write(
+                        data
+                );
 
                 output.flush();
 
@@ -876,7 +1015,9 @@ public class MainActivity extends Activity {
                 while ((line =
                         reader.readLine()) != null) {
 
-                    response.append(line);
+                    response.append(
+                            line
+                    );
                 }
 
                 reader.close();
