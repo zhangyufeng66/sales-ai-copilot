@@ -62,9 +62,7 @@ public class MainActivity extends Activity {
     }
 
     private void setupStatusBar() {
-
         Window window = getWindow();
-
         window.setStatusBarColor(background);
 
         if (android.os.Build.VERSION.SDK_INT >=
@@ -123,7 +121,6 @@ public class MainActivity extends Activity {
         });
 
         TextView title = new TextView(this);
-
         title.setText("销售AI副驾驶");
         title.setTextColor(dark);
         title.setTextSize(28);
@@ -141,7 +138,10 @@ public class MainActivity extends Activity {
 
         titleParams.bottomMargin = 8;
 
-        root.addView(title, titleParams);
+        root.addView(
+                title,
+                titleParams
+        );
 
         TextView subtitle = new TextView(this);
 
@@ -164,13 +164,20 @@ public class MainActivity extends Activity {
 
         subtitleParams.bottomMargin = 24;
 
-        root.addView(subtitle, subtitleParams);
+        root.addView(
+                subtitle,
+                subtitleParams
+        );
 
         TextView inputTitle = new TextView(this);
 
-        inputTitle.setText("客户消息 / 客户情况");
+        inputTitle.setText(
+                "客户消息 / 客户情况"
+        );
+
         inputTitle.setTextColor(dark);
         inputTitle.setTextSize(17);
+
         inputTitle.setTypeface(
                 null,
                 android.graphics.Typeface.BOLD
@@ -238,7 +245,10 @@ public class MainActivity extends Activity {
 
         voiceButton = new Button(this);
 
-        voiceButton.setText("🎙️ 语音输入");
+        voiceButton.setText(
+                "🎙️ 语音输入"
+        );
+
         voiceButton.setTextColor(blue);
         voiceButton.setTextSize(17);
         voiceButton.setGravity(Gravity.CENTER);
@@ -271,8 +281,14 @@ public class MainActivity extends Activity {
 
         analyzeButton = new Button(this);
 
-        analyzeButton.setText("🤖 AI销售分析");
-        analyzeButton.setTextColor(Color.WHITE);
+        analyzeButton.setText(
+                "🤖 AI销售分析"
+        );
+
+        analyzeButton.setTextColor(
+                Color.WHITE
+        );
+
         analyzeButton.setTextSize(18);
         analyzeButton.setGravity(Gravity.CENTER);
         analyzeButton.setAllCaps(false);
@@ -311,9 +327,13 @@ public class MainActivity extends Activity {
 
         TextView resultTitle = new TextView(this);
 
-        resultTitle.setText("AI销售分析");
+        resultTitle.setText(
+                "AI销售分析"
+        );
+
         resultTitle.setTextColor(dark);
         resultTitle.setTextSize(19);
+
         resultTitle.setTypeface(
                 null,
                 android.graphics.Typeface.BOLD
@@ -349,6 +369,7 @@ public class MainActivity extends Activity {
 
         result.setTextColor(dark);
         result.setTextSize(16);
+
         result.setGravity(
                 Gravity.TOP | Gravity.START
         );
@@ -425,9 +446,7 @@ public class MainActivity extends Activity {
         root.addView(tips);
 
         scrollView = new ScrollView(this);
-
         scrollView.setFillViewport(true);
-
         scrollView.addView(root);
 
         setContentView(scrollView);
@@ -521,9 +540,7 @@ public class MainActivity extends Activity {
 
                             Toast.makeText(
                                     MainActivity.this,
-                                    getSpeechErrorMessage(
-                                            error
-                                    ),
+                                    getSpeechErrorMessage(error),
                                     Toast.LENGTH_SHORT
                             ).show();
                         });
@@ -761,8 +778,4 @@ public class MainActivity extends Activity {
                 URL url =
                         new URL(API_URL);
 
-                connection =
-                        (HttpURLConnection)
-                                url.openConnection();
-
-                conne
+              
