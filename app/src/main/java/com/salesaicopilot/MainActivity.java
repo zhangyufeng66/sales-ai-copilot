@@ -7,6 +7,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -47,16 +48,17 @@ public class MainActivity extends Activity {
         buildInterface();
     }
 
-    // =========================================================
-    // 状态栏
-    // =========================================================
-
+    // =========================
+    // 状态栏设置
+    // =========================
     private void setupStatusBar() {
 
         Window window = getWindow();
 
+        // 保留系统状态栏
         window.setStatusBarColor(background);
 
+        // 状态栏文字使用深色
         if (android.os.Build.VERSION.SDK_INT >=
                 android.os.Build.VERSION_CODES.M) {
 
@@ -66,210 +68,193 @@ public class MainActivity extends Activity {
         }
     }
 
-    // =========================================================
+    // =========================
     // 创建界面
-    // =========================================================
-
+    // =========================
     private void buildInterface() {
 
-        scrollView = new ScrollView(this);
-
-        scrollView.setFillViewport(true);
-        scrollView.setBackgroundColor(background);
-
         root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(background);
 
-        root.setOrientation(
-                LinearLayout.VERTICAL
-        );
+        // 基础间距
+        final int baseLeft = 28;
+        final int baseTop = 12;
+        final int baseRight = 28;
+        final int baseBottom = 35;
 
-        // 顶部距离调整为25dp
+        // 先设置基础 Padding
         root.setPadding(
-                28,
-                25,
-                28,
-                35
+                baseLeft,
+                baseTop,
+                baseRight,
+                baseBottom
         );
 
-        root.setBackgroundColor(
-                background
-        );
+        // =========================
+        // 自动获取状态栏高度
+        // =========================
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
 
-        // =====================================================
-        // 主标题
-        // =====================================================
+            int statusBarHeight = 0;
 
+            if (android.os.Build.VERSION.SDK_INT >=
+                    android.os.Build.VERSION_CODES.R) {
+
+                statusBarHeight =
+                        insets.getInsets(
+                                WindowInsets.Type.statusBars()
+                        ).top;
+
+            } else {
+
+                statusBarHeight =
+                        insets.getSystemWindowInsetTop();
+            }
+
+            // 自动把内容往下移动
+            v.setPadding(
+                    baseLeft,
+                    baseTop + statusBarHeight,
+                    baseRight,
+                    baseBottom
+            );
+
+            return insets;
+        });
+
+        // =========================
+        // 标题
+        // =========================
         TextView title = new TextView(this);
 
-        title.setText(
-                "销售AI副驾驶"
-        );
-
-        title.setTextSize(28);
-
+        title.setText("销售AI副驾驶");
         title.setTextColor(dark);
+        title.setTextSize(28);
+        title.setGravity(Gravity.CENTER);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
 
-        title.setGravity(
-                Gravity.CENTER
-        );
-
-        title.setTypeface(
-                null,
-                1
-        );
-
-        root.addView(
-                title,
+        LinearLayout.LayoutParams titleParams =
                 new LinearLayout.LayoutParams(
-                        -1,
-                        70
-                )
-        );
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
 
-        // =====================================================
+        titleParams.bottomMargin = 8;
+
+        root.addView(title, titleParams);
+
+        // =========================
         // 副标题
-        // =====================================================
-
+        // =========================
         TextView subtitle = new TextView(this);
 
         subtitle.setText(
                 "DeepSeek AI · 客户分析 · 销售策略 · 智能话术"
         );
 
+        subtitle.setTextColor(Color.rgb(100, 110, 125));
         subtitle.setTextSize(14);
+        subtitle.setGravity(Gravity.CENTER);
 
-        subtitle.setTextColor(
-                Color.GRAY
-        );
-
-        subtitle.setGravity(
-                Gravity.CENTER
-        );
-
-        root.addView(
-                subtitle,
+        LinearLayout.LayoutParams subtitleParams =
                 new LinearLayout.LayoutParams(
-                        -1,
-                        55
-                )
-        );
-
-        // =====================================================
-        // 客户信息标题
-        // =====================================================
-
-        TextView customerTitle = new TextView(this);
-
-        customerTitle.setText(
-                "客户消息 / 客户情况"
-        );
-
-        customerTitle.setTextSize(18);
-
-        customerTitle.setTextColor(
-                dark
-        );
-
-        customerTitle.setTypeface(
-                null,
-                1
-        );
-
-        LinearLayout.LayoutParams customerTitleParams =
-                new LinearLayout.LayoutParams(
-                        -1,
-                        50
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
                 );
 
-        customerTitleParams.setMargins(
-                0,
-                20,
-                0,
-                8
-        );
+        subtitleParams.bottomMargin = 24;
 
-        root.addView(
-                customerTitle,
-                customerTitleParams
-        );
+        root.addView(subtitle, subtitleParams);
 
-        // =====================================================
-        // 客户输入框
-        // =====================================================
+        // =========================
+        // 客户消息标题
+        // =========================
+        TextView inputTitle = new TextView(this);
 
+        inputTitle.setText("客户消息 / 客户情况");
+        inputTitle.setTextColor(dark);
+        inputTitle.setTextSize(17);
+        inputTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+
+        LinearLayout.LayoutParams inputTitleParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+        inputTitleParams.bottomMargin = 10;
+
+        root.addView(inputTitle, inputTitleParams);
+
+        // =========================
+        // 输入框
+        // =========================
         input = new EditText(this);
 
         input.setHint(
                 "例如：客户说你们价格有点高，我再考虑一下..."
         );
 
-        input.setTextSize(17);
-
-        input.setGravity(
-                Gravity.TOP
+        input.setTextSize(16);
+        input.setTextColor(dark);
+        input.setHintTextColor(
+                Color.rgb(150, 155, 165)
         );
+
+        input.setGravity(Gravity.TOP | Gravity.START);
 
         input.setPadding(
-                22,
                 20,
-                22,
-                20
+                18,
+                20,
+                18
         );
 
-        input.setSingleLine(false);
+        input.setMinHeight(150);
 
         input.setBackground(
                 roundBackground(
                         Color.WHITE,
-                        20
+                        Color.rgb(225, 230, 238),
+                        18
                 )
         );
 
-        root.addView(
-                input,
+        LinearLayout.LayoutParams inputParams =
                 new LinearLayout.LayoutParams(
-                        -1,
-                        220
-                )
-        );
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        170
+                );
 
-        // =====================================================
-        // AI销售分析按钮
-        // =====================================================
+        inputParams.bottomMargin = 18;
 
+        root.addView(input, inputParams);
+
+        // =========================
+        // AI分析按钮
+        // =========================
         analyzeButton = new Button(this);
 
-        analyzeButton.setText(
-                "🤖 AI销售分析"
-        );
+        analyzeButton.setText("🤖 AI销售分析");
 
+        analyzeButton.setTextColor(Color.WHITE);
         analyzeButton.setTextSize(18);
 
-        analyzeButton.setTextColor(
-                Color.WHITE
-        );
+        analyzeButton.setGravity(Gravity.CENTER);
 
-        analyzeButton.setGravity(
-                Gravity.CENTER
-        );
-
-        analyzeButton.setAllCaps(
-                false
-        );
-
-        analyzeButton.setMinHeight(
-                100
-        );
+        analyzeButton.setAllCaps(false);
 
         analyzeButton.setPadding(
-                20,
                 10,
-                20,
+                10,
+                10,
                 10
         );
 
         analyzeButton.setBackground(
                 roundBackground(
+                        blue,
                         blue,
                         20
                 )
@@ -277,60 +262,51 @@ public class MainActivity extends Activity {
 
         LinearLayout.LayoutParams buttonParams =
                 new LinearLayout.LayoutParams(
-                        -1,
+                        LinearLayout.LayoutParams.MATCH_PARENT,
                         100
                 );
 
-        buttonParams.setMargins(
-                0,
-                22,
-                0,
-                24
-        );
+        buttonParams.bottomMargin = 24;
 
         root.addView(
                 analyzeButton,
                 buttonParams
         );
 
-        // =====================================================
-        // AI分析结果标题
-        // =====================================================
-
+        // =========================
+        // 分析结果标题
+        // =========================
         TextView resultTitle = new TextView(this);
 
-        resultTitle.setText(
-                "AI销售分析"
-        );
-
+        resultTitle.setText("AI销售分析");
+        resultTitle.setTextColor(dark);
         resultTitle.setTextSize(19);
-
-        resultTitle.setTextColor(
-                dark
-        );
-
         resultTitle.setTypeface(
                 null,
-                1
+                android.graphics.Typeface.BOLD
         );
+
+        LinearLayout.LayoutParams resultTitleParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+        resultTitleParams.bottomMargin = 10;
 
         root.addView(
                 resultTitle,
-                new LinearLayout.LayoutParams(
-                        -1,
-                        50
-                )
+                resultTitleParams
         );
 
-        // =====================================================
-        // AI分析结果
-        // =====================================================
-
+        // =========================
+        // 分析结果
+        // =========================
         result = new TextView(this);
 
         result.setText(
-                "等待输入客户消息...\n\n" +
-                "AI将分析：\n" +
+                "请输入客户消息，然后点击“AI销售分析”。\n\n" +
+                "AI将帮助你分析：\n" +
                 "• 客户意向\n" +
                 "• 客户需求\n" +
                 "• 客户痛点\n" +
@@ -340,342 +316,297 @@ public class MainActivity extends Activity {
                 "• 推荐销售话术"
         );
 
+        result.setTextColor(dark);
         result.setTextSize(16);
-
-        result.setTextColor(
-                Color.DKGRAY
-        );
-
-        result.setGravity(
-                Gravity.TOP
-        );
+        result.setGravity(Gravity.TOP | Gravity.START);
+        result.setLineSpacing(6, 1.0f);
 
         result.setPadding(
-                22,
-                22,
-                22,
-                22
+                20,
+                20,
+                20,
+                20
         );
 
         result.setBackground(
                 roundBackground(
                         Color.WHITE,
-                        20
+                        Color.rgb(225, 230, 238),
+                        18
                 )
         );
+
+        LinearLayout.LayoutParams resultParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+        resultParams.bottomMargin = 20;
 
         root.addView(
                 result,
-                new LinearLayout.LayoutParams(
-                        -1,
-                        520
-                )
+                resultParams
         );
 
-        // =====================================================
-        // 使用说明
-        // =====================================================
+        // =========================
+        // 使用提示
+        // =========================
+        TextView tips = new TextView(this);
 
-        TextView tip = new TextView(this);
-
-        tip.setText(
-                "\n使用方法\n" +
-                "① 输入客户说的话或客户情况\n" +
-                "② 点击“AI销售分析”\n" +
-                "③ AI分析客户意向和需求\n" +
-                "④ 给出下一步销售策略\n" +
-                "⑤ 自动生成推荐话术"
+        tips.setText(
+                "使用提示\n\n" +
+                "1. 输入客户真实聊天内容\n" +
+                "2. 内容越具体，分析越准确\n" +
+                "3. AI不会编造客户没有提供的信息\n" +
+                "4. 建议结合实际情况判断AI给出的建议"
         );
 
-        tip.setTextSize(14);
-
-        tip.setTextColor(
-                Color.GRAY
+        tips.setTextColor(
+                Color.rgb(100, 110, 125)
         );
 
-        LinearLayout.LayoutParams tipParams =
-                new LinearLayout.LayoutParams(
-                        -1,
-                        -2
-                );
+        tips.setTextSize(14);
+        tips.setLineSpacing(5, 1.0f);
 
-        tipParams.setMargins(
-                5,
+        tips.setPadding(
                 20,
-                5,
+                20,
+                20,
                 20
         );
 
-        root.addView(
-                tip,
-                tipParams
+        tips.setBackground(
+                roundBackground(
+                        Color.rgb(240, 244, 249),
+                        Color.rgb(225, 230, 238),
+                        18
+                )
         );
+
+        root.addView(tips);
+
+        // =========================
+        // 点击AI分析
+        // =========================
+        analyzeButton.setOnClickListener(
+                v -> analyzeCustomer()
+        );
+
+        // =========================
+        // ScrollView
+        // =========================
+        scrollView = new ScrollView(this);
+
+        scrollView.setFillViewport(true);
 
         scrollView.addView(root);
 
         setContentView(scrollView);
-
-        // =====================================================
-        // AI按钮点击
-        // =====================================================
-
-        analyzeButton.setOnClickListener(
-                new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-
-                        String message =
-                                input.getText()
-                                        .toString()
-                                        .trim();
-
-                        if (message.isEmpty()) {
-
-                            Toast.makeText(
-                                    MainActivity.this,
-                                    "请先输入客户消息",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-
-                            return;
-                        }
-
-                        analyzeCustomer(message);
-                    }
-                }
-        );
     }
 
-    // =========================================================
+    // =========================
     // AI分析
-    // =========================================================
+    // =========================
+    private void analyzeCustomer() {
 
-    private void analyzeCustomer(
-            String message) {
+        String message =
+                input.getText()
+                        .toString()
+                        .trim();
+
+        if (message.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "请输入客户消息",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
 
         analyzeButton.setEnabled(false);
+        analyzeButton.setText("正在分析...");
 
-        analyzeButton.setText(
-                "AI正在分析..."
-        );
+        result.setText("AI正在分析客户信息，请稍候...");
 
-        result.setText(
-                "DeepSeek 正在分析客户信息，请稍候..."
-        );
+        new Thread(() -> {
 
-        new Thread(
-                new Runnable() {
+            HttpURLConnection connection = null;
 
-                    @Override
-                    public void run() {
+            try {
 
-                        try {
+                URL url = new URL(API_URL);
 
-                            URL url =
-                                    new URL(API_URL);
+                connection =
+                        (HttpURLConnection) url.openConnection();
 
-                            HttpURLConnection connection =
-                                    (HttpURLConnection)
-                                            url.openConnection();
+                connection.setRequestMethod("POST");
 
-                            connection.setRequestMethod(
-                                    "POST"
-                            );
+                connection.setConnectTimeout(30000);
 
-                            connection.setRequestProperty(
-                                    "Content-Type",
-                                    "application/json"
-                            );
+                connection.setReadTimeout(60000);
 
-                            connection.setConnectTimeout(
-                                    15000
-                            );
+                connection.setDoOutput(true);
 
-                            connection.setReadTimeout(
-                                    30000
-                            );
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "application/json"
+                );
 
-                            connection.setDoOutput(
-                                    true
-                            );
+                JSONObject json =
+                        new JSONObject();
 
-                            JSONObject request =
-                                    new JSONObject();
+                json.put(
+                        "message",
+                        message
+                );
 
-                            request.put(
-                                    "message",
-                                    message
-                            );
+                byte[] data =
+                        json.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
 
-                            String json =
-                                    request.toString();
+                OutputStream output =
+                        connection.getOutputStream();
 
-                            OutputStream output =
-                                    connection.getOutputStream();
+                output.write(data);
 
-                            output.write(
-                                    json.getBytes(
-                                            StandardCharsets.UTF_8
-                                    )
-                            );
+                output.flush();
+                output.close();
 
-                            output.flush();
-                            output.close();
+                int responseCode =
+                        connection.getResponseCode();
 
-                            int responseCode =
-                                    connection.getResponseCode();
+                InputStream inputStream;
 
-                            InputStream stream;
+                if (responseCode >= 200 &&
+                        responseCode < 300) {
 
-                            if (
-                                    responseCode >= 200 &&
-                                    responseCode < 300
-                            ) {
+                    inputStream =
+                            connection.getInputStream();
 
-                                stream =
-                                        connection.getInputStream();
+                } else {
 
-                            } else {
-
-                                stream =
-                                        connection.getErrorStream();
-                            }
-
-                            BufferedReader reader =
-                                    new BufferedReader(
-                                            new InputStreamReader(
-                                                    stream,
-                                                    StandardCharsets.UTF_8
-                                            )
-                                    );
-
-                            StringBuilder response =
-                                    new StringBuilder();
-
-                            String line;
-
-                            while (
-                                    (line =
-                                            reader.readLine())
-                                            != null
-                            ) {
-
-                                response.append(line);
-                            }
-
-                            reader.close();
-
-                            JSONObject jsonResponse =
-                                    new JSONObject(
-                                            response.toString()
-                                    );
-
-                            final String aiResult;
-
-                            if (
-                                    jsonResponse.has("result")
-                            ) {
-
-                                aiResult =
-                                        jsonResponse.getString(
-                                                "result"
-                                        );
-
-                            } else if (
-                                    jsonResponse.has("error")
-                            ) {
-
-                                aiResult =
-                                        "AI接口错误：\n" +
-                                        jsonResponse.getString(
-                                                "error"
-                                        );
-
-                            } else {
-
-                                aiResult =
-                                        "AI返回数据异常：\n" +
-                                        response.toString();
-                            }
-
-                            runOnUiThread(
-                                    new Runnable() {
-
-                                        @Override
-                                        public void run() {
-
-                                            result.setText(
-                                                    aiResult
-                                            );
-
-                                            analyzeButton.setEnabled(
-                                                    true
-                                            );
-
-                                            analyzeButton.setText(
-                                                    "🤖 AI销售分析"
-                                            );
-                                        }
-                                    }
-                            );
-
-                            connection.disconnect();
-
-                        } catch (
-                                Exception e
-                        ) {
-
-                            final String error =
-                                    e.getMessage();
-
-                            runOnUiThread(
-                                    new Runnable() {
-
-                                        @Override
-                                        public void run() {
-
-                                            result.setText(
-                                                    "连接AI失败\n\n" +
-                                                    "错误信息：\n" +
-                                                    error +
-                                                    "\n\n" +
-                                                    "请检查网络连接和服务器配置。"
-                                            );
-
-                                            analyzeButton.setEnabled(
-                                                    true
-                                            );
-
-                                            analyzeButton.setText(
-                                                    "🤖 AI销售分析"
-                                            );
-                                        }
-                                    }
-                            );
-                        }
-                    }
+                    inputStream =
+                            connection.getErrorStream();
                 }
-        ).start();
+
+                BufferedReader reader =
+                        new BufferedReader(
+                                new InputStreamReader(
+                                        inputStream,
+                                        StandardCharsets.UTF_8
+                                )
+                        );
+
+                StringBuilder response =
+                        new StringBuilder();
+
+                String line;
+
+                while ((line = reader.readLine())
+                        != null) {
+
+                    response.append(line);
+                }
+
+                reader.close();
+
+                JSONObject responseJson =
+                        new JSONObject(
+                                response.toString()
+                        );
+
+                if (responseCode >= 200 &&
+                        responseCode < 300) {
+
+                    String aiResult =
+                            responseJson.optString(
+                                    "result",
+                                    "AI没有返回分析结果"
+                            );
+
+                    runOnUiThread(() -> {
+
+                        result.setText(aiResult);
+
+                        analyzeButton.setEnabled(true);
+
+                        analyzeButton.setText(
+                                "🤖 AI销售分析"
+                        );
+                    });
+
+                } else {
+
+                    String error =
+                            responseJson.optString(
+                                    "error",
+                                    response.toString()
+                            );
+
+                    runOnUiThread(() -> {
+
+                        result.setText(
+                                "分析失败：\n\n" + error
+                        );
+
+                        analyzeButton.setEnabled(true);
+
+                        analyzeButton.setText(
+                                "🤖 AI销售分析"
+                        );
+                    });
+                }
+
+            } catch (Exception e) {
+
+                runOnUiThread(() -> {
+
+                    result.setText(
+                            "连接AI失败：\n\n" +
+                            e.getMessage()
+                    );
+
+                    analyzeButton.setEnabled(true);
+
+                    analyzeButton.setText(
+                            "🤖 AI销售分析"
+                    );
+                });
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
     }
 
-    // =========================================================
+    // =========================
     // 圆角背景
-    // =========================================================
-
+    // =========================
     private GradientDrawable roundBackground(
-            int color,
-            float radius) {
+            int fillColor,
+            int strokeColor,
+            int radius
+    ) {
 
         GradientDrawable drawable =
                 new GradientDrawable();
 
-        drawable.setColor(
-                color
-        );
+        drawable.setColor(fillColor);
 
-        drawable.setCornerRadius(
-                radius
+        drawable.setCornerRadius(radius);
+
+        drawable.setStroke(
+                1,
+                strokeColor
         );
 
         return drawable;
