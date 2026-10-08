@@ -21,6 +21,8 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -40,8 +42,6 @@ public class MainActivity extends Activity {
     private TextView result;
     private Button analyzeButton;
     private Button voiceButton;
-    private ScrollView scrollView;
-    private LinearLayout root;
 
     private MediaRecorder mediaRecorder;
     private boolean isRecording = false;
@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
 
     private void buildInterface() {
 
-        root = new LinearLayout(this);
+        LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(BG);
 
@@ -89,21 +89,22 @@ public class MainActivity extends Activity {
 
             if (insets != null) {
                 statusBarHeight =
-                        insets.getInsets(WindowInsets.Type.statusBars()).top;
+                        insets.getInsets(
+                                WindowInsets.Type.statusBars()
+                        ).top;
             }
         }
 
         if (statusBarHeight <= 0) {
-            int resourceId = getResources()
-                    .getIdentifier(
-                            "status_bar_height",
-                            "dimen",
-                            "android"
-                    );
+            int id = getResources().getIdentifier(
+                    "status_bar_height",
+                    "dimen",
+                    "android"
+            );
 
-            if (resourceId > 0) {
+            if (id > 0) {
                 statusBarHeight =
-                        getResources().getDimensionPixelSize(resourceId);
+                        getResources().getDimensionPixelSize(id);
             }
         }
 
@@ -119,14 +120,14 @@ public class MainActivity extends Activity {
         title.setTextColor(TEXT);
         title.setTextSize(28);
         title.setGravity(Gravity.CENTER);
-        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setTypeface(
+                null,
+                android.graphics.Typeface.BOLD
+        );
 
         root.addView(
                 title,
-                new LinearLayout.LayoutParams(
-                        -1,
-                        55
-                )
+                new LinearLayout.LayoutParams(-1, 55)
         );
 
         TextView subtitle = new TextView(this);
@@ -137,28 +138,23 @@ public class MainActivity extends Activity {
         subtitle.setTextSize(14);
         subtitle.setGravity(Gravity.CENTER);
 
-        LinearLayout.LayoutParams subtitleParams =
-                new LinearLayout.LayoutParams(
-                        -1,
-                        35
-                );
-
-        subtitleParams.bottomMargin = 10;
-
-        root.addView(subtitle, subtitleParams);
+        root.addView(
+                subtitle,
+                new LinearLayout.LayoutParams(-1, 35)
+        );
 
         TextView inputTitle = new TextView(this);
         inputTitle.setText("客户消息 / 客户情况");
         inputTitle.setTextColor(TEXT);
         inputTitle.setTextSize(17);
-        inputTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+        inputTitle.setTypeface(
+                null,
+                android.graphics.Typeface.BOLD
+        );
 
         root.addView(
                 inputTitle,
-                new LinearLayout.LayoutParams(
-                        -1,
-                        40
-                )
+                new LinearLayout.LayoutParams(-1, 40)
         );
 
         input = new EditText(this);
@@ -167,8 +163,12 @@ public class MainActivity extends Activity {
         );
         input.setTextSize(16);
         input.setTextColor(TEXT);
-        input.setHintTextColor(Color.rgb(160, 168, 180));
-        input.setGravity(Gravity.TOP | Gravity.LEFT);
+        input.setHintTextColor(
+                Color.rgb(160, 168, 180)
+        );
+        input.setGravity(
+                Gravity.TOP | Gravity.LEFT
+        );
         input.setPadding(20, 18, 20, 18);
         input.setSingleLine(false);
         input.setMinLines(5);
@@ -182,10 +182,7 @@ public class MainActivity extends Activity {
         input.setBackground(inputBg);
 
         LinearLayout.LayoutParams inputParams =
-                new LinearLayout.LayoutParams(
-                        -1,
-                        180
-                );
+                new LinearLayout.LayoutParams(-1, 180);
 
         inputParams.bottomMargin = 12;
 
@@ -204,14 +201,14 @@ public class MainActivity extends Activity {
         );
 
         LinearLayout.LayoutParams voiceParams =
-                new LinearLayout.LayoutParams(
-                        -1,
-                        90
-                );
+                new LinearLayout.LayoutParams(-1, 90);
 
         voiceParams.bottomMargin = 12;
 
-        root.addView(voiceButton, voiceParams);
+        root.addView(
+                voiceButton,
+                voiceParams
+        );
 
         analyzeButton = new Button(this);
         analyzeButton.setText("🤖 AI销售分析");
@@ -233,10 +230,7 @@ public class MainActivity extends Activity {
 
         root.addView(
                 analyzeButton,
-                new LinearLayout.LayoutParams(
-                        -1,
-                        100
-                )
+                new LinearLayout.LayoutParams(-1, 100)
         );
 
         TextView resultTitle = new TextView(this);
@@ -248,17 +242,9 @@ public class MainActivity extends Activity {
                 android.graphics.Typeface.BOLD
         );
 
-        LinearLayout.LayoutParams resultTitleParams =
-                new LinearLayout.LayoutParams(
-                        -1,
-                        50
-                );
-
-        resultTitleParams.topMargin = 18;
-
         root.addView(
                 resultTitle,
-                resultTitleParams
+                new LinearLayout.LayoutParams(-1, 50)
         );
 
         result = new TextView(this);
@@ -267,7 +253,9 @@ public class MainActivity extends Activity {
         );
         result.setTextColor(TEXT);
         result.setTextSize(16);
-        result.setGravity(Gravity.TOP | Gravity.LEFT);
+        result.setGravity(
+                Gravity.TOP | Gravity.LEFT
+        );
         result.setPadding(20, 20, 20, 20);
 
         GradientDrawable resultBg =
@@ -278,56 +266,32 @@ public class MainActivity extends Activity {
 
         result.setBackground(resultBg);
 
-        LinearLayout.LayoutParams resultParams =
-                new LinearLayout.LayoutParams(
-                        -1,
-                        420
-                );
-
-        root.addView(result, resultParams);
+        root.addView(
+                result,
+                new LinearLayout.LayoutParams(-1, 420)
+        );
 
         TextView tips = new TextView(this);
-
         tips.setText(
                 "使用方法：\n" +
                 "① 点击“点击录音”\n" +
                 "② 对着手机说客户情况\n" +
                 "③ 再次点击停止录音\n" +
-                "④ 系统自动转成文字\n" +
-                "⑤ 点击“AI销售分析”获取销售建议"
+                "④ 自动转成文字\n" +
+                "⑤ 点击“AI销售分析”"
         );
-
         tips.setTextColor(SUB);
         tips.setTextSize(14);
         tips.setPadding(5, 18, 5, 0);
 
         root.addView(
                 tips,
-                new LinearLayout.LayoutParams(
-                        -1,
-                        150
-                )
+                new LinearLayout.LayoutParams(-1, 150)
         );
 
-        scrollView = new ScrollView(this);
+        ScrollView scrollView = new ScrollView(this);
         scrollView.setFillViewport(true);
-
-        LinearLayout container =
-                new LinearLayout(this);
-
-        container.setOrientation(
-                LinearLayout.VERTICAL
-        );
-
-        container.addView(
-                root,
-                new LinearLayout.LayoutParams(
-                        -1,
-                        -2
-                )
-        );
-
-        scrollView.addView(container);
+        scrollView.addView(root);
 
         setContentView(scrollView);
     }
@@ -343,21 +307,18 @@ public class MainActivity extends Activity {
 
     private void startRecording() {
 
-        if (android.os.Build.VERSION.SDK_INT >= 23) {
+        if (checkSelfPermission(
+                Manifest.permission.RECORD_AUDIO
+        ) != PackageManager.PERMISSION_GRANTED) {
 
-            if (checkSelfPermission(
-                    Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[]{
+                            Manifest.permission.RECORD_AUDIO
+                    },
+                    RECORD_AUDIO_PERMISSION
+            );
 
-                requestPermissions(
-                        new String[]{
-                                Manifest.permission.RECORD_AUDIO
-                        },
-                        RECORD_AUDIO_PERMISSION
-                );
-
-                return;
-            }
+            return;
         }
 
         try {
@@ -381,17 +342,7 @@ public class MainActivity extends Activity {
                     MediaRecorder.AudioEncoder.AAC
             );
 
-            mediaRecorder.setAudioEncodingBitRate(
-                    128000
-            );
-
-            mediaRecorder.setAudioSamplingRate(
-                    44100
-            );
-
-            mediaRecorder.setOutputFile(
-                    audioPath
-            );
+            mediaRecorder.setOutputFile(audioPath);
 
             mediaRecorder.prepare();
             mediaRecorder.start();
@@ -428,20 +379,16 @@ public class MainActivity extends Activity {
 
         try {
 
-            if (mediaRecorder != null) {
-
-                mediaRecorder.stop();
-                mediaRecorder.release();
-                mediaRecorder = null;
-            }
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            mediaRecorder = null;
 
             isRecording = false;
 
+            voiceButton.setEnabled(false);
             voiceButton.setText(
                     "⏳  正在识别..."
             );
-
-            voiceButton.setEnabled(false);
 
             uploadAudio();
 
@@ -450,17 +397,11 @@ public class MainActivity extends Activity {
             isRecording = false;
 
             if (mediaRecorder != null) {
-
-                try {
-                    mediaRecorder.release();
-                } catch (Exception ignored) {
-                }
-
+                mediaRecorder.release();
                 mediaRecorder = null;
             }
 
             voiceButton.setEnabled(true);
-
             voiceButton.setText(
                     "🎙️  点击录音"
             );
@@ -485,62 +426,62 @@ public class MainActivity extends Activity {
                         new URL(TRANSCRIBE_URL);
 
                 connection =
-                        (HttpURLConnection) url.openConnection();
+                        (HttpURLConnection)
+                                url.openConnection();
 
                 connection.setRequestMethod("POST");
-
                 connection.setDoOutput(true);
                 connection.setDoInput(true);
 
-                connection.setConnectTimeout(
-                        30000
-                );
-
-                connection.setReadTimeout(
-                        60000
-                );
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(60000);
 
                 connection.setRequestProperty(
                         "Content-Type",
                         "audio/mp4"
                 );
 
-                java.io.File file =
-                        new java.io.File(audioPath);
-
-                byte[] audioBytes =
-                        java.nio.file.Files.readAllBytes(
-                                file.toPath()
-                        );
+                File file =
+                        new File(audioPath);
 
                 OutputStream output =
                         connection.getOutputStream();
 
-                output.write(audioBytes);
+                FileInputStream fileInput =
+                        new FileInputStream(file);
+
+                byte[] buffer = new byte[8192];
+                int length;
+
+                while ((length =
+                        fileInput.read(buffer)) != -1) {
+
+                    output.write(
+                            buffer,
+                            0,
+                            length
+                    );
+                }
+
+                fileInput.close();
                 output.flush();
                 output.close();
 
-                int responseCode =
+                int code =
                         connection.getResponseCode();
 
-                InputStream inputStream;
+                InputStream stream;
 
-                if (responseCode >= 200 &&
-                        responseCode < 300) {
-
-                    inputStream =
-                            connection.getInputStream();
-
+                if (code >= 200 && code < 300) {
+                    stream = connection.getInputStream();
                 } else {
-
-                    inputStream =
-                            connection.getErrorStream();
+                    stream = connection.getErrorStream();
                 }
 
                 BufferedReader reader =
                         new BufferedReader(
                                 new InputStreamReader(
-                                        inputStream,
+                                        stream,
                                         StandardCharsets.UTF_8
                                 )
                         );
@@ -561,10 +502,9 @@ public class MainActivity extends Activity {
                                 response.toString()
                         );
 
-                if (responseCode >= 200 &&
-                        responseCode < 300) {
+                if (code >= 200 && code < 300) {
 
-                    final String text =
+                    String text =
                             json.optString(
                                     "text",
                                     ""
@@ -573,7 +513,6 @@ public class MainActivity extends Activity {
                     runOnUiThread(() -> {
 
                         voiceButton.setEnabled(true);
-
                         voiceButton.setText(
                                 "🎙️  点击录音"
                         );
@@ -581,7 +520,7 @@ public class MainActivity extends Activity {
                         if (text.trim().isEmpty()) {
 
                             Toast.makeText(
-                                    MainActivity.this,
+                                    this,
                                     "没有识别到语音内容",
                                     Toast.LENGTH_LONG
                             ).show();
@@ -595,7 +534,7 @@ public class MainActivity extends Activity {
                         );
 
                         Toast.makeText(
-                                MainActivity.this,
+                                this,
                                 "语音识别完成",
                                 Toast.LENGTH_SHORT
                         ).show();
@@ -603,7 +542,7 @@ public class MainActivity extends Activity {
 
                 } else {
 
-                    final String error =
+                    String error =
                             json.optString(
                                     "error",
                                     "语音识别失败"
@@ -612,13 +551,12 @@ public class MainActivity extends Activity {
                     runOnUiThread(() -> {
 
                         voiceButton.setEnabled(true);
-
                         voiceButton.setText(
                                 "🎙️  点击录音"
                         );
 
                         Toast.makeText(
-                                MainActivity.this,
+                                this,
                                 error,
                                 Toast.LENGTH_LONG
                         ).show();
@@ -627,7 +565,7 @@ public class MainActivity extends Activity {
 
             } catch (Exception e) {
 
-                final String error =
+                String error =
                         e.getMessage() == null
                                 ? "网络或语音识别异常"
                                 : e.getMessage();
@@ -635,13 +573,12 @@ public class MainActivity extends Activity {
                 runOnUiThread(() -> {
 
                     voiceButton.setEnabled(true);
-
                     voiceButton.setText(
                             "🎙️  点击录音"
                     );
 
                     Toast.makeText(
-                            MainActivity.this,
+                            this,
                             "语音识别失败：" + error,
                             Toast.LENGTH_LONG
                     ).show();
@@ -656,7 +593,6 @@ public class MainActivity extends Activity {
 
         }).start();
     }
-
     private void analyzeCustomer() {
 
         String message =
@@ -677,10 +613,7 @@ public class MainActivity extends Activity {
 
         analyzeButton.setEnabled(false);
         analyzeButton.setText("⏳ AI分析中...");
-
-        result.setText(
-                "正在分析客户，请稍候..."
-        );
+        result.setText("正在分析客户，请稍候...");
 
         new Thread(() -> {
 
@@ -692,20 +625,15 @@ public class MainActivity extends Activity {
                         new URL(API_URL);
 
                 connection =
-                        (HttpURLConnection) url.openConnection();
+                        (HttpURLConnection)
+                                url.openConnection();
 
                 connection.setRequestMethod("POST");
-
                 connection.setDoOutput(true);
                 connection.setDoInput(true);
 
-                connection.setConnectTimeout(
-                        30000
-                );
-
-                connection.setReadTimeout(
-                        60000
-                );
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(60000);
 
                 connection.setRequestProperty(
                         "Content-Type",
@@ -715,10 +643,7 @@ public class MainActivity extends Activity {
                 JSONObject body =
                         new JSONObject();
 
-                body.put(
-                        "message",
-                        message
-                );
+                body.put("message", message);
 
                 byte[] data =
                         body.toString()
@@ -733,21 +658,155 @@ public class MainActivity extends Activity {
                 output.flush();
                 output.close();
 
-                int responseCode =
+                int code =
                         connection.getResponseCode();
 
-                InputStream inputStream;
+                InputStream stream;
 
-                if (responseCode >= 200 &&
-                        responseCode < 300) {
+                if (code >= 200 && code < 300) {
+                    stream = connection.getInputStream();
+                } else {
+                    stream = connection.getErrorStream();
+                }
 
-                    inputStream =
-                            connection.getInputStream();
+                BufferedReader reader =
+                        new BufferedReader(
+                                new InputStreamReader(
+                                        stream,
+                                        StandardCharsets.UTF_8
+                                )
+                        );
+
+                StringBuilder response =
+                        new StringBuilder();
+
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                reader.close();
+
+                JSONObject json =
+                        new JSONObject(
+                                response.toString()
+                        );
+
+                String aiResult;
+
+                if (json.has("result")) {
+
+                    aiResult =
+                            json.optString(
+                                    "result",
+                                    ""
+                            );
 
                 } else {
 
-                    inputStream =
-                            connection.getErrorStream();
+                    aiResult =
+                            json.optString(
+                                    "error",
+                                    "AI分析失败"
+                            );
                 }
 
-                BufferedReader read
+                final String finalResult =
+                        aiResult;
+
+                runOnUiThread(() -> {
+
+                    result.setText(finalResult);
+
+                    analyzeButton.setEnabled(true);
+
+                    analyzeButton.setText(
+                            "🤖 AI销售分析"
+                    );
+                });
+
+            } catch (Exception e) {
+
+                final String error =
+                        e.getMessage() == null
+                                ? "网络连接异常"
+                                : e.getMessage();
+
+                runOnUiThread(() -> {
+
+                    result.setText(
+                            "AI分析失败：\n" + error
+                    );
+
+                    analyzeButton.setEnabled(true);
+
+                    analyzeButton.setText(
+                            "🤖 AI销售分析"
+                    );
+                });
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String[] permissions,
+            int[] grantResults
+    ) {
+
+        super.onRequestPermissionsResult(
+                requestCode,
+                permissions,
+                grantResults
+        );
+
+        if (requestCode ==
+                RECORD_AUDIO_PERMISSION) {
+
+            if (grantResults.length > 0 &&
+                    grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED) {
+
+                startRecording();
+
+            } else {
+
+                Toast.makeText(
+                        this,
+                        "需要麦克风权限才能使用语音录入",
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        if (mediaRecorder != null) {
+
+            try {
+                mediaRecorder.stop();
+            } catch (Exception ignored) {
+            }
+
+            try {
+                mediaRecorder.release();
+            } catch (Exception ignored) {
+            }
+
+            mediaRecorder = null;
+        }
+
+        super.onDestroy();
+    }
+}
